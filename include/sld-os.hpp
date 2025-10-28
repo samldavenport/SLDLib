@@ -123,22 +123,16 @@ namespace sld {
     using os_window_swap_buffers_f       = const os_window_error_t (*) (const os_window_handle_t window_handle);
     using os_window_show_f               = const os_window_error_t (*) (const os_window_handle_t window_handle);
     using os_window_open_file_dialog_f   = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_dialog_t& dialog);
+    using os_window_save_file_dialog_f   = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_dialog_t& dialog);
+
 
     struct os_window_update_t {
         input_keyboard_t*       keyboard;
         os_window_event_flags_t events;
     };
 
-    struct os_window_dialog_file_filter_t {
-        cchar desc [16];
-        cchar ext  [16];
-    };
-
     struct os_window_dialog_t {
-        struct {
-            os_window_dialog_file_filter_t* array;
-            u64                             count;
-        } filter;
+        const cchar* filter;
         struct {
             cchar* buffer;
             u64    size;
@@ -397,6 +391,8 @@ namespace sld {
     SLD_API_OS os_window_set_viewport_f         os_window_set_viewport;  
     SLD_API_OS os_window_set_clear_color_f      os_window_set_clear_color;  
     SLD_API_OS os_window_open_file_dialog_f     os_window_open_file_dialog;
+    SLD_API_OS os_window_save_file_dialog_f     os_window_save_file_dialog;
+
     SLD_API_OS os_memory_reserve_f              os_memory_reserve;
     SLD_API_OS os_memory_release_f              os_memory_release;
     SLD_API_OS os_memory_commit_f               os_memory_commit;

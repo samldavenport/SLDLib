@@ -38,6 +38,7 @@ namespace sld {
     os_window_set_viewport_f         os_window_set_viewport         = win32_window_opengl3_set_viewport;
     os_window_set_clear_color_f      os_window_set_clear_color      = win32_window_opengl3_set_clear_color; 
     os_window_open_file_dialog_f     os_window_open_file_dialog     = win32_window_open_file_dialog; 
+    os_window_save_file_dialog_f     os_window_save_file_dialog     = win32_window_save_file_dialog;
 
     // memory
     os_memory_reserve_f              os_memory_reserve              = win32_memory_reserve;

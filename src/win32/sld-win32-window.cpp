@@ -105,39 +105,6 @@ namespace sld {
         const os_window_handle_t handle,
         os_window_dialog_t&      dialog) {
 
-        constexpr s32   sprintf_s_fail      = -1; 
-        constexpr u32   filter_buffer_size  = 1024;
-        constexpr u32   filter_stride_desc  = filter_buffer_size / sizeof(os_window_dialog_file_filter_t::desc);   
-        constexpr u32   filter_stride_ext   = filter_buffer_size / sizeof(os_window_dialog_file_filter_t::ext);   
-        constexpr u32   filter_stride_total = filter_stride_desc + filter_stride_ext; 
-        constexpr u32   filter_count_max    = filter_buffer_size / filter_stride_total;
-        static    cchar filter_buffer[filter_buffer_size];
-
-
-        if (dialog.filter.count != 0) {
-            assert(dialog.filter.array != NULL && dialog.filter.count <= filter_count_max);
-
-            u32 bytes_written   = 0;
-            u32 bytes_remaining = filter_buffer_size; 
-            for (
-                u32 index = 0;
-                index < dialog.filter.count;
-                ++index) {
-
-                const cchar* src_desc    = dialog.filter.array[index].desc;
-                const cchar* src_ext     = dialog.filter.array[index].ext;
-                const u32    length_desc = strnlen_s(src_dest, filter_stride_desc);
-                const u32    length_ext  = strnlen_s(src_ext,  filter_stride_ext);
-
-                cchar* dst_filter = &filter_buffer[bytes_written];
-                                
-                const s32 filter_bytes_written = sprintf_s(dst_filter, bytes_remaining, "%s\0");
-                assert(filter_bytes_written != sprintf_s_fail);
-
-            }
-        } else {
-        }
-
         // initialize the dialog
         OPENFILENAME ofn;       
         ZeroMemory(&ofn, sizeof(ofn));
@@ -147,12 +114,40 @@ namespace sld {
         ofn.nMaxFile     = dialog.path_selection.size; 
         ofn.nFilterIndex = 1;
         ofn.Flags        = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOLONGNAMES | OFN_NONETWORKBUTTON | OFN_EXPLORER;
-        ofn.lpstrFilter  = (dialog.filter.count == 0)
-            ? "All Files\0*.*\0Text Files\0*.txt\0"
-            : NULL;
+        ofn.lpstrFilter  = (dialog.filter == NULL || dialog.filter[0] == 0)
+            ? "All Files\0*.*\0"
+            : dialog.filter;
 
         // display the dialog
         dialog.did_select = GetOpenFileName(&ofn);
+        
+        os_window_error_t error = (dialog.did_select)
+            ? win32_window_error_success()  
+            : win32_window_error_get_last();
+
+        return(error);
+    }
+
+    SLD_API_OS_FUNC const os_window_error_t
+    win32_window_save_file_dialog(
+        const os_window_handle_t handle,
+        os_window_dialog_t&      dialog) {
+
+        // initialize the dialog
+        OPENFILENAME ofn;       
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize  = sizeof(ofn);
+        ofn.hwndOwner    = (HWND)handle.val; 
+        ofn.lpstrFile    = dialog.path_selection.buffer;
+        ofn.nMaxFile     = dialog.path_selection.size; 
+        ofn.nFilterIndex = 1;
+        ofn.Flags        = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
+        ofn.lpstrFilter  = (dialog.filter == NULL || dialog.filter[0] == 0)
+            ? "All Files\0*.*\0"
+            : dialog.filter;
+
+        // display the dialog
+        dialog.did_select = GetSaveFileName(&ofn);
         
         os_window_error_t error = (dialog.did_select)
             ? win32_window_error_success()  
@@ -206,7 +201,6 @@ namespace sld {
         os_window_update_t&      update) {
 
         os_window_error_t error = win32_window_error_success();
-
 
         update.events.val = os_window_event_e_none;
 
