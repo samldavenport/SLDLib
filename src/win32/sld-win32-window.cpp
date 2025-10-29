@@ -108,11 +108,13 @@ namespace sld {
         // initialize the dialog
         OPENFILENAME ofn;       
         ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize  = sizeof(ofn);
-        ofn.hwndOwner    = (HWND)handle.val; 
-        ofn.lpstrFile    = dialog.path_selection.buffer;
-        ofn.nMaxFile     = dialog.path_selection.size; 
-        ofn.nFilterIndex = 1;
+        ofn.lStructSize     = sizeof(ofn);
+        ofn.hwndOwner       = (HWND)handle.val; 
+        ofn.lpstrFile       = dialog.selection_buffer_cstr;
+        ofn.lpstrInitialDir = dialog.start;
+        ofn.nMaxFile        = dialog.selection_buffer_size;
+        ofn.lpstrTitle      = dialog.title; 
+        ofn.nFilterIndex    = 1;
         ofn.Flags        = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOLONGNAMES | OFN_NONETWORKBUTTON | OFN_EXPLORER;
         ofn.lpstrFilter  = (dialog.filter == NULL || dialog.filter[0] == 0)
             ? "All Files\0*.*\0"
@@ -136,13 +138,15 @@ namespace sld {
         // initialize the dialog
         OPENFILENAME ofn;       
         ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize  = sizeof(ofn);
-        ofn.hwndOwner    = (HWND)handle.val; 
-        ofn.lpstrFile    = dialog.path_selection.buffer;
-        ofn.nMaxFile     = dialog.path_selection.size; 
-        ofn.nFilterIndex = 1;
-        ofn.Flags        = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
-        ofn.lpstrFilter  = (dialog.filter == NULL || dialog.filter[0] == 0)
+        ofn.lStructSize     = sizeof(ofn);
+        ofn.hwndOwner       = (HWND)handle.val; 
+        ofn.lpstrFile       = dialog.selection_buffer_cstr;
+        ofn.lpstrInitialDir = dialog.start;
+        ofn.nMaxFile        = dialog.selection_buffer_size;
+        ofn.lpstrTitle      = dialog.title; 
+        ofn.nFilterIndex    = 1;
+        ofn.Flags           = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
+        ofn.lpstrFilter     = (dialog.filter == NULL || dialog.filter[0] == 0)
             ? "All Files\0*.*\0"
             : dialog.filter;
 
