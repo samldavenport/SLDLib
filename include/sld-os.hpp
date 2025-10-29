@@ -29,12 +29,13 @@ namespace sld {
     // SYSTEM
     //-------------------------------------------------------------------
 
-    SLD_API_OS os_system_get_cpu_info_f         os_system_get_cpu_info;
-    SLD_API_OS os_system_get_cpu_cache_info_f   os_system_get_cpu_cache_info;
-    SLD_API_OS os_system_get_memory_info_f      os_system_get_memory_info;
-    SLD_API_OS os_system_time_ms_f              os_system_time_ms;
-    SLD_API_OS os_system_sleep_f                os_system_sleep;
-    SLD_API_OS os_system_debug_print_f          os_system_debug_print;
+    SLD_API_OS os_system_get_cpu_info_f          os_system_get_cpu_info;
+    SLD_API_OS os_system_get_cpu_cache_info_f    os_system_get_cpu_cache_info;
+    SLD_API_OS os_system_get_memory_info_f       os_system_get_memory_info;
+    SLD_API_OS os_system_time_ms_f               os_system_time_ms;
+    SLD_API_OS os_system_sleep_f                 os_system_sleep;
+    SLD_API_OS os_system_debug_print_f           os_system_debug_print;
+    SLD_API_OS os_system_get_working_directory_f os_system_get_working_directory;
 
     //-------------------------------------------------------------------
     // MONITORS

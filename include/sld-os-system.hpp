@@ -9,12 +9,13 @@ namespace sld {
     struct os_system_cpu_cache_info_t;
     struct os_system_memory_info_t;
 
-    using os_system_get_cpu_info_f       = void      (*) (os_system_cpu_info_t&       cpu_info);
-    using os_system_get_cpu_cache_info_f = void      (*) (os_system_cpu_cache_info_t& cpu_cache_info);
-    using os_system_get_memory_info_f    = void      (*) (os_system_memory_info_t&    memory_info);
-    using os_system_time_ms_f            = const u64 (*) (void);
-    using os_system_sleep_f              = void      (*) (const u32 ms);
-    using os_system_debug_print_f        = void      (*) (const c8* debug_string);
+    using os_system_get_cpu_info_f          = void         (*) (os_system_cpu_info_t&       cpu_info);
+    using os_system_get_cpu_cache_info_f    = void         (*) (os_system_cpu_cache_info_t& cpu_cache_info);
+    using os_system_get_memory_info_f       = void         (*) (os_system_memory_info_t&    memory_info);
+    using os_system_time_ms_f               = const u64    (*) (void);
+    using os_system_sleep_f                 = void         (*) (const u32 ms);
+    using os_system_debug_print_f           = void         (*) (const c8* debug_string);
+    using os_system_get_working_directory_f = const cchar* (*) (void);
 
     struct os_system_cpu_cache_info_t {
         u32 level;

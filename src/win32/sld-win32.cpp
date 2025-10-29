@@ -13,12 +13,13 @@
 namespace sld {
 
     // system
-    os_system_get_cpu_info_f         os_system_get_cpu_info         = win32_system_get_cpu_info;
-    os_system_get_cpu_cache_info_f   os_system_get_cpu_cache_info   = win32_system_get_cpu_cache_info;
-    os_system_get_memory_info_f      os_system_get_memory_info      = win32_system_get_memory_info;
-    os_system_time_ms_f              os_system_time_ms              = win32_system_time_ms;
-    os_system_sleep_f                os_system_sleep                = win32_system_sleep;
-    os_system_debug_print_f          os_system_debug_print          = win32_system_debug_print;
+    os_system_get_cpu_info_f         os_system_get_cpu_info           = win32_system_get_cpu_info;
+    os_system_get_cpu_cache_info_f   os_system_get_cpu_cache_info     = win32_system_get_cpu_cache_info;
+    os_system_get_memory_info_f      os_system_get_memory_info        = win32_system_get_memory_info;
+    os_system_time_ms_f              os_system_time_ms                = win32_system_time_ms;
+    os_system_sleep_f                os_system_sleep                  = win32_system_sleep;
+    os_system_debug_print_f          os_system_debug_print            = win32_system_debug_print;
+    os_system_get_working_directory_f os_system_get_working_directory = win32_system_get_working_directory; 
 
     // monitors
     os_monitor_count_f               os_monitor_count               = win32_monitor_count;
