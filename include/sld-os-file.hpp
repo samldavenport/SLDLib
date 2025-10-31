@@ -10,7 +10,6 @@ namespace sld {
 
     using  os_file_handle_t       = vptr_t;
     using  os_file_error_t        = s32_t;
-    using  os_file_flags_t        = u32_t;
     using  os_file_access_flags_t = u8_t;
     using  os_file_share_flags_t  = u8_t;
     using  os_file_mode_t         = u8_t;
