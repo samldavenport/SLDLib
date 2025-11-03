@@ -55,7 +55,7 @@ namespace sld {
             monitor_info.position_y   = win32_monitor_info.rcMonitor.top;
             
             sld_monitor_name.chars = monitor_info.name_cstr;
-            (void)cstr_copy_from(&sld_monitor_name, win32_monitor_info.szDevice, name_size);
+            (void)cstr_copy_from(&sld_monitor_name, (cchar*)win32_monitor_info.szDevice, name_size);
 
             // update the index
             ++enumerator->index;

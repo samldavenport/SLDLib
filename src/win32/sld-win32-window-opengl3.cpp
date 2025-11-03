@@ -24,10 +24,10 @@ namespace sld {
 
     SLD_API_OS_FUNC const os_window_error_t
     win32_window_opengl3_create(
-        os_window_handle_t&         window_handle,
-        const c8*                   title,
-        const os_window_size_t&     size,
-        const os_window_pos_t& position) {
+        os_window_handle_t&     window_handle,
+        const cchar*            title,
+        const os_window_size_t& size,
+        const os_window_pos_t&  position) {
 
         os_window_error_t error = { os_window_error_e_success };
 
@@ -41,7 +41,7 @@ namespace sld {
         // create the window
         window_handle.val = CreateWindowA(
             window_class->lpszClassName,
-            title,
+            (LPCSTR)title,
             WS_OVERLAPPEDWINDOW,
             position.x,
             position.y,

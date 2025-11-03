@@ -21,18 +21,17 @@ namespace sld {
     struct os_file_path_cstr_t;
 
     using os_file_async_callback_f        = void                  (*) (const void* data, const os_file_error_t error, const u32 bytes_transferred);
-    using os_file_open_f                  = const os_file_error_t (*) (os_file_handle_t&      file_handle, const c8* path, const os_file_config_t& config);
+    using os_file_open_f                  = const os_file_error_t (*) (os_file_handle_t&      file_handle, const cchar* path, const os_file_config_t* config);
     using os_file_size_f                  = const os_file_error_t (*) (const os_file_handle_t file_handle, u64& size);
-    using os_file_read_f                  = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t& buffer);    
-    using os_file_write_f                 = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t& buffer);    
-    using os_file_read_async_f            = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t& buffer, os_file_async_context_t& context);    
-    using os_file_write_async_f           = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t& buffer, os_file_async_context_t& context);    
+    using os_file_read_f                  = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer);    
+    using os_file_write_f                 = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer);    
+    using os_file_read_async_f            = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer, os_file_async_context_t* context);    
+    using os_file_write_async_f           = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer, os_file_async_context_t* context);    
     using os_file_get_working_directory_f = const os_file_error_t (*) (os_file_path_cstr_t& file_path); 
 
     struct os_file_buffer_t {
         byte* data;
         u64   size;
-        u64   length;
         u64   cursor;
         u64   transferred;
     };
@@ -122,7 +121,6 @@ namespace sld {
         bool is_valid = true;
         is_valid &= (buffer.data   != NULL);
         is_valid &= (buffer.size   != 0);
-        is_valid &= (buffer.length <= buffer.size);
         return(is_valid);
     }
 };

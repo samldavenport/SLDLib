@@ -16,7 +16,7 @@
 
 namespace sld {
 
-    typedef c8 xml_utf8_t;
+    using xml_utf8_t = cchar;
 
     struct xml_doc_t;
     struct xml_node_t;

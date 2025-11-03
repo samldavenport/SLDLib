@@ -34,8 +34,8 @@ namespace sld {
     SLD_API_OS_FUNC const os_file_error_t
     win32_file_open(
         os_file_handle_t&       file_handle,
-        const c8*               path,
-        const os_file_config_t& config) {
+        const cchar*            path,
+        const os_file_config_t* config) {
 
         win32_file_args_t file_args = {0};
         file_args.access          = 0;
@@ -44,21 +44,21 @@ namespace sld {
         file_args.flags           = FILE_ATTRIBUTE_NORMAL; 
 
         // access
-        const bool access_read  = (config.access_flags.val & os_file_access_flag_e_read);
-        const bool access_write = (config.access_flags.val & os_file_access_flag_e_write);
+        const bool access_read  = (config->access_flags.val & os_file_access_flag_e_read);
+        const bool access_write = (config->access_flags.val & os_file_access_flag_e_write);
         if (access_read)  file_args.access |= GENERIC_READ;
         if (access_write) file_args.access |= GENERIC_WRITE;
 
         // share        
-        const bool share_read   = (config.share_flags.val & os_file_share_flag_e_read);
-        const bool share_write  = (config.share_flags.val & os_file_share_flag_e_write);
-        const bool share_delete = (config.share_flags.val & os_file_share_flag_e_delete);
+        const bool share_read   = (config->share_flags.val & os_file_share_flag_e_read);
+        const bool share_write  = (config->share_flags.val & os_file_share_flag_e_write);
+        const bool share_delete = (config->share_flags.val & os_file_share_flag_e_delete);
         if (share_read)   file_args.share  |= FILE_SHARE_READ;
         if (share_write)  file_args.share  |= FILE_SHARE_WRITE;
         if (share_delete) file_args.share  |= FILE_SHARE_DELETE;
 
         // mode
-        switch (config.mode.val) {
+        switch (config->mode.val) {
             case(os_file_mode_e_create_new):          file_args.mode = CREATE_NEW;    break;
             case(os_file_mode_e_open_existing):       file_args.mode = OPEN_EXISTING; break;
             case(os_file_mode_e_open_always):         file_args.mode = OPEN_ALWAYS;   break;
@@ -67,11 +67,11 @@ namespace sld {
         }
 
         // async
-        if (config.is_async) file_args.flags |= FILE_FLAG_OVERLAPPED;
+        if (config->is_async) file_args.flags |= FILE_FLAG_OVERLAPPED;
 
         // create file
         const HANDLE win32_handle = CreateFile(
-            path,
+            (LPCSTR)path,
             file_args.access,
             file_args.share,
             file_args.security,
@@ -112,20 +112,17 @@ namespace sld {
     SLD_API_OS_FUNC const os_file_error_t
     win32_file_read(
         const os_file_handle_t handle,
-        os_file_buffer_t&      buffer) {
+        os_file_buffer_t*      buffer) {
 
         OVERLAPPED overlapped;
         ZeroMemory(&overlapped, sizeof(overlapped));
-        overlapped.Offset = buffer.cursor;
-
-        LPVOID    lp_buffer     = (LPVOID)&buffer.data[buffer.length];
-        const u32 bytes_to_read = buffer.size - buffer.length;
+        overlapped.Offset = buffer->cursor;
 
         BOOL result = ReadFile(
             (HANDLE)handle.val,           // hFile
-            (LPVOID)lp_buffer,            // lpBuffer
-            bytes_to_read,                // nNumberOfBytesToRead
-            (LPDWORD)&buffer.transferred, // lpNumberOfBytesRead
+            (LPVOID)buffer->data,          // lpBuffer
+            (DWORD)buffer->size,           // nNumberOfBytesToRead
+            (LPDWORD)&buffer->transferred, // lpNumberOfBytesRead
             &overlapped                   // lpOverlapped
         );
 
@@ -147,8 +144,7 @@ namespace sld {
         }
 
         // translate the error
-        buffer.length += buffer.transferred;
-        buffer.cursor += buffer.transferred;
+        buffer->cursor += buffer->transferred;
         const os_file_error_t error = win32_file_get_error_code(win32_error);
         return(error);
     }
@@ -156,20 +152,18 @@ namespace sld {
     SLD_API_OS_FUNC const os_file_error_t
     win32_file_write(
         const os_file_handle_t handle,
-        os_file_buffer_t&      buffer) {
+        os_file_buffer_t*      buffer) {
 
         OVERLAPPED overlapped;
         ZeroMemory(&overlapped, sizeof(overlapped));
-        overlapped.Offset = buffer.cursor;
-
-        const HANDLE win32_handle = (HANDLE)handle.val;
+        overlapped.Offset = buffer->cursor;
 
         // write the file
         const BOOL result = WriteFile(
-            win32_handle,                 // hFile,
-            (LPVOID)buffer.data,          // lpBuffer,
-            buffer.length,                // nNumberOfBytesToWrite,
-            (LPDWORD)&buffer.transferred, // lpNumberOfBytesWritten,
+            (HANDLE)handle.val,           // hFile,
+            (LPVOID)buffer->data,          // lpBuffer,
+            (DWORD)buffer->size,           // nNumberOfBytesToWrite,
+            (LPDWORD)&buffer->transferred, // lpNumberOfBytesWritten,
             &overlapped                   // lpOverlapped
         );
 
@@ -188,6 +182,8 @@ namespace sld {
         else {
             win32_error = result ? ERROR_SUCCESS : GetLastError(); 
         }
+
+        buffer->cursor += buffer->transferred;
 
         // translate the error
         const os_file_error_t error = win32_file_get_error_code(win32_error);
@@ -197,17 +193,19 @@ namespace sld {
     SLD_API_OS_FUNC const os_file_error_t
     win32_file_read_async(
         const os_file_handle_t   handle,
-        os_file_buffer_t&        buffer,
-        os_file_async_context_t& context) {
+        os_file_buffer_t*        buffer,
+        os_file_async_context_t* context) {
 
-        LPOVERLAPPED overlapped = (LPOVERLAPPED)context.os->data;
-        overlapped->Pointer     = (PVOID)context.callback;
-        overlapped->Offset      = buffer.cursor;
+        os_file_os_context_t* os_context = context->os;
+
+        LPOVERLAPPED overlapped = (LPOVERLAPPED)os_context->data;
+        overlapped->Pointer     = (PVOID)context->callback;
+        overlapped->Offset      = buffer->cursor;
 
         const bool result = ReadFileEx(
-            handle.val,               // hFile 
-            (LPVOID)buffer.data,      // lpBuffer 
-            buffer.length,            // nNumberOfBytesToRead 
+            (HANDLE)handle.val,       // hFile 
+            (LPVOID)buffer->data,      // lpBuffer 
+            (DWORD)buffer->size,       // nNumberOfBytesToRead 
             overlapped,               // lpOverlapped 
             win32_file_async_callback // lpCompletionRoutine 
         );
@@ -223,17 +221,19 @@ namespace sld {
     SLD_API_OS_FUNC const os_file_error_t
     win32_file_write_async(
         const os_file_handle_t   handle,
-        os_file_buffer_t&        buffer,
-        os_file_async_context_t& context) {
+        os_file_buffer_t*        buffer,
+        os_file_async_context_t* context) {
 
-        LPOVERLAPPED overlapped = (LPOVERLAPPED)context.os->data;
-        overlapped->Pointer     = (PVOID)&context.callback;
-        overlapped->Offset      = buffer.cursor;
+        os_file_os_context_t* os_context = context->os;
+
+        LPOVERLAPPED overlapped = (LPOVERLAPPED)os_context->data;
+        overlapped->Pointer     = (PVOID)context->callback;
+        overlapped->Offset      = buffer->cursor;
 
         const bool result = WriteFileEx(
-            handle.val,               // hFile 
-            (LPCVOID)buffer.data,     // lpBuffer 
-            buffer.length,            // nNumberOfBytesToWrite 
+            (HANDLE)handle.val,       // hFile 
+            (LPVOID)buffer->data,     // lpBuffer 
+            (DWORD)buffer->size,      // nNumberOfBytesToRead 
             overlapped,               // lpOverlapped 
             win32_file_async_callback // lpCompletionRoutine 
         );

@@ -17,7 +17,7 @@ namespace sld {
     struct os_window_update_t;
     struct os_window_dialog_t;
 
-    using os_window_create_f             = const os_window_error_t (*) (os_window_handle_t&      window_handle, const c8* title, const os_window_size_t& size, const os_window_pos_t& position);
+    using os_window_create_f             = const os_window_error_t (*) (os_window_handle_t&      window_handle, const cchar* title, const os_window_size_t& size, const os_window_pos_t& position);
     using os_window_set_viewport_f       = const os_window_error_t (*) (const os_window_handle_t window_handle, const os_window_size_t& size, const os_window_pos_t& position); 
     using os_window_update_f             = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_update_t&           update);
     using os_window_get_size_f           = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_size_t&             size);

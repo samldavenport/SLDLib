@@ -110,15 +110,15 @@ namespace sld {
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize     = sizeof(ofn);
         ofn.hwndOwner       = (HWND)handle.val; 
-        ofn.lpstrFile       = dialog.selection_buffer_cstr;
-        ofn.lpstrInitialDir = dialog.start;
+        ofn.lpstrFile       = (LPSTR)dialog.selection_buffer_cstr;
+        ofn.lpstrInitialDir = (LPCSTR)dialog.start;
         ofn.nMaxFile        = dialog.selection_buffer_size;
-        ofn.lpstrTitle      = dialog.title; 
+        ofn.lpstrTitle      = (LPCSTR)dialog.title; 
         ofn.nFilterIndex    = 1;
         ofn.Flags        = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOLONGNAMES | OFN_NONETWORKBUTTON | OFN_EXPLORER;
         ofn.lpstrFilter  = (dialog.filter == NULL || dialog.filter[0] == 0)
             ? "All Files\0*.*\0"
-            : dialog.filter;
+            : (LPCSTR)dialog.filter;
 
         // display the dialog
         dialog.did_select = GetOpenFileName(&ofn);
@@ -140,15 +140,15 @@ namespace sld {
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize     = sizeof(ofn);
         ofn.hwndOwner       = (HWND)handle.val; 
-        ofn.lpstrFile       = dialog.selection_buffer_cstr;
-        ofn.lpstrInitialDir = dialog.start;
+        ofn.lpstrFile       = (LPSTR)dialog.selection_buffer_cstr;
+        ofn.lpstrInitialDir = (LPCSTR)dialog.start;
         ofn.nMaxFile        = dialog.selection_buffer_size;
-        ofn.lpstrTitle      = dialog.title; 
+        ofn.lpstrTitle      = (LPCSTR)dialog.title; 
         ofn.nFilterIndex    = 1;
         ofn.Flags           = OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
         ofn.lpstrFilter     = (dialog.filter == NULL || dialog.filter[0] == 0)
             ? "All Files\0*.*\0"
-            : dialog.filter;
+            : (LPCSTR)dialog.filter;
 
         // display the dialog
         dialog.did_select = GetSaveFileName(&ofn);
