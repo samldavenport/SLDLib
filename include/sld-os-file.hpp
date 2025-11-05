@@ -19,6 +19,7 @@ namespace sld {
     struct os_file_os_context_t;
     struct os_file_async_context_t;
     struct os_file_path_cstr_t;
+    struct os_file_t;
 
     using os_file_async_callback_f        = void                  (*) (const void* data, const os_file_error_t error, const u32 bytes_transferred);
     using os_file_open_f                  = const os_file_error_t (*) (os_file_handle_t&      file_handle, const cchar* path, const os_file_config_t* config);
@@ -27,13 +28,21 @@ namespace sld {
     using os_file_write_f                 = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer);    
     using os_file_read_async_f            = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer, os_file_async_context_t* context);    
     using os_file_write_async_f           = const os_file_error_t (*) (const os_file_handle_t file_handle, os_file_buffer_t* buffer, os_file_async_context_t* context);    
-    using os_file_get_working_directory_f = const os_file_error_t (*) (os_file_path_cstr_t& file_path); 
 
     struct os_file_buffer_t {
         byte* data;
         u64   size;
         u64   cursor;
         u64   transferred;
+    };
+
+
+    struct os_file_t {
+        void* os_handle_file;
+        void* os_handle_mapping;
+        u64   cursor;
+        u64   transferred;
+        u64   
     };
 
     struct os_file_os_context_t {

@@ -75,6 +75,9 @@ namespace sld {
     SLD_API_OS os_memory_align_to_granularity_f os_memory_align_to_granularity;
     SLD_API_OS os_memory_is_reserved_f          os_memory_is_reserved;
     SLD_API_OS os_memory_is_committed_f         os_memory_is_committed;
+    SLD_API_OS os_memory_alloc_f                os_memory_alloc;
+    SLD_API_OS os_memory_free_f                 os_memory_free;
+
 
     //-------------------------------------------------------------------
     // FILES
