@@ -17,6 +17,7 @@
 #define SLD_INLINE              inline
 #define SLD_INTERNAL_INLINE     static inline
 #define SLD_INTERNAL            static
+#define SLD_GLOBAL              static
 #define SLD_API_INLINE          inline
 #define SLD_API_INLINE_TEMPLATE template<typename type> inline
 #define SLD_UTILITY             static constexpr
@@ -32,7 +33,7 @@
 namespace sld {
 
     //-------------------------------------------------------------------
-    // PRIMITIVES
+    // PRIMITIVE TYPES
     //-------------------------------------------------------------------
 
     // signed integers
@@ -64,30 +65,67 @@ namespace sld {
     // memory
     typedef uint8_t  byte;
     typedef intptr_t addr;
-    typedef void*    vptr;
+    typedef void*    handle;
     typedef u8       pad8;
     typedef u16      pad16;
     typedef u32      pad32;
     typedef u64      pad64;
 
     // structured
-    struct  s8_t    { s8    val; };
-    struct  s16_t   { s16   val; };
-    struct  s32_t   { s32   val; };
-    struct  s64_t   { s64   val; };
-    struct  u8_t    { u8    val; };
-    struct  u16_t   { u16   val; };
-    struct  u32_t   { u32   val; };
-    struct  u64_t   { u64   val; };
-    struct  f32_t   { f32   val; };
-    struct  f64_t   { f64   val; };
-    struct  b8_t    { b8    val; };
-    struct  b16_t   { b16   val; };
-    struct  b32_t   { b32   val; };
-    struct  b64_t   { b64   val; };
-    struct  byte_t  { byte  val; };
-    struct  addr_t  { addr  val; };
-    struct  vptr_t  { vptr  val; };
+
+    //-------------------------------------------------------------------
+    // STRUCTURED TYPES
+    //-------------------------------------------------------------------
+
+
+    template<typename _t>
+    struct structured_type_t {
+
+        _t val;
+
+        constexpr          structured_type_t()     : val(0) {}
+        constexpr explicit structured_type_t(_t v) : val(v) {}
+
+        // assignment
+        constexpr structured_type_t& operator=  (_t v)                            noexcept       { val =  v;          return *this;          }
+        constexpr structured_type_t& operator|= (const structured_type_t& other)  noexcept       { val |= other.val; return *this; }
+        constexpr structured_type_t& operator&= (const structured_type_t& other)  noexcept       { val &= other.val; return *this; }
+        constexpr structured_type_t& operator^= (const structured_type_t& other)  noexcept       { val ^= other.val; return *this; }
+        constexpr structured_type_t& operator|= (_t v)                            noexcept       { val |= v;         return *this; }
+        constexpr structured_type_t& operator&= (_t v)                            noexcept       { val &= v;         return *this; }
+        constexpr structured_type_t& operator^= (_t v)                            noexcept       { val ^= v;         return *this; }
+
+        // comparisons
+        constexpr bool               operator==  (const structured_type_t& other) const noexcept { return val == other.val; }
+        constexpr bool               operator!=  (const structured_type_t& other) const noexcept { return val != other.val; }
+        constexpr bool               operator==  (_t v)                           const noexcept { return val == v;         }
+        constexpr bool               operator!=  (_t v)                           const noexcept { return val != v;         }
+
+        // bitwise
+        constexpr structured_type_t  operator|   (const structured_type_t& other) const noexcept { return structured_type_t(val | other.val); }
+        constexpr structured_type_t  operator&   (const structured_type_t& other) const noexcept { return structured_type_t(val & other.val); }
+        constexpr structured_type_t  operator^   (const structured_type_t& other) const noexcept { return structured_type_t(val ^ other.val); }
+        constexpr structured_type_t  operator|   (_t v)                           const noexcept { return structured_type_t(val | v);         }
+        constexpr structured_type_t  operator&   (_t v)                           const noexcept { return structured_type_t(val & v);         }
+        constexpr structured_type_t  operator^   (_t v)                           const noexcept { return structured_type_t(val ^ v);         }
+        constexpr structured_type_t  operator~   (void)                           const noexcept { return structured_type_t(~val);            }
+        constexpr structured_type_t  operator<<  (int bits)                       const noexcept { return structured_type_t(val << bits);     }
+        constexpr structured_type_t  operator>>  (int bits)                       const noexcept { return structured_type_t(val >> bits);     }
+        constexpr structured_type_t& operator<<= (int bits)                       noexcept       { val <<= bits; return *this;                }
+        constexpr structured_type_t& operator>>= (int bits)                       noexcept       { val >>= bits; return *this;                }
+
+        // bool
+        explicit constexpr operator bool (void) const noexcept { return(val > 0); }
+    };
+
+    using  s32_t  = structured_type_t<s32>;
+    using  s64_t  = structured_type_t<s64>;
+    using  u32_t  = structured_type_t<u32>;
+    using  u64_t  = structured_type_t<u64>;
+    using  f32_t  = structured_type_t<f32>;
+    using  f64_t  = structured_type_t<f64>;
+    using  vptr_t = structured_type_t<vptr>;
+
 
     //-------------------------------------------------------------------
     // SIZE UTILITIES

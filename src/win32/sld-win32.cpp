@@ -54,11 +54,5 @@ namespace sld {
     os_memory_is_committed_f          os_memory_is_committed           = win32_memory_is_committed;
     
     // files
-    os_file_open_f                    os_file_open                     = win32_file_open; 
-    os_file_size_f                    os_file_size                     = win32_file_size; 
-    os_file_read_f                    os_file_read                     = win32_file_read; 
-    os_file_write_f                   os_file_write                    = win32_file_write; 
-    os_file_read_async_f              os_file_read_async               = win32_file_read_async; 
-    os_file_write_async_f             os_file_write_async              = win32_file_write_async;
-    os_file_get_working_directory_f   os_file_get_working_directory    = win32_file_get_working_directory; 
+
 };

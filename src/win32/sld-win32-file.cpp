@@ -10,6 +10,16 @@
 
 namespace sld {
 
+    struct test_t : structured_type_t<void*> {
+ 
+    };
+
+    //-------------------------------------------------------------------
+    // GLOBALS
+    //-------------------------------------------------------------------
+
+    SLD_GLOBAL os_file_error_t _file_error;
+
     //-------------------------------------------------------------------
     // DECLARATIONS
     //-------------------------------------------------------------------
@@ -23,27 +33,29 @@ namespace sld {
         DWORD                 flags;
     };
 
-    const os_file_error_t  win32_file_get_error_code         (const DWORD error_code);
-    const os_file_error_t& win32_file_error_success          (void);
+    // internal methods
+    void                   win32_file_clear_last_error       (void);
+    void                   win32_file_set_last_error         (void);
     const u64              win32_file_get_buffer_granularity (void);
-    LPOVERLAPPED           win32_file_get_overlapped         (os_file_t* file);
+    LPOVERLAPPED           win32_file_get_overlapped         (os_file_io_t* io);
 
     //-------------------------------------------------------------------
     // OS API
     //-------------------------------------------------------------------
 
-    SLD_API_OS_FUNC const bool
+    SLD_API_OS_FUNC bool
     win32_file_open(
         os_file_t*              file,
-        const os_file_path_t*   path,
-        const os_file_config_t* config) {
+        const os_file_config_t* config,
+        const cchar*            path) {
 
+        win32_file_clear_last_error();
+        
         // check args
-        bool can_open = (
-            file         != NULL &&
-            path         != NULL &&
-            path->buffer != NULL &&
-            config       != NULL
+        const bool can_open = (
+            file   != NULL &&
+            config != NULL &&
+            path   != NULL
         );
         assert(can_open);
 
@@ -54,15 +66,15 @@ namespace sld {
         file_args.flags           = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED; 
 
         // access
-        const bool access_read  = (config->access_flags.val & os_file_access_flag_e_read);
-        const bool access_write = (config->access_flags.val & os_file_access_flag_e_write);
+        const bool access_read  = (config->access_flags & os_file_access_flag_e_read);
+        const bool access_write = (config->access_flags & os_file_access_flag_e_write);
         if (access_read)  file_args.access |= GENERIC_READ;
         if (access_write) file_args.access |= GENERIC_WRITE;
 
         // share        
-        const bool share_read   = (config->share_flags.val & os_file_share_flag_e_read);
-        const bool share_write  = (config->share_flags.val & os_file_share_flag_e_write);
-        const bool share_delete = (config->share_flags.val & os_file_share_flag_e_delete);
+        const bool share_read   = (bool)(config->share_flags & os_file_share_flag_e_read);
+        const bool share_write  = (bool)(config->share_flags & os_file_share_flag_e_write);
+        const bool share_delete = (bool)(config->share_flags & os_file_share_flag_e_delete);
         if (share_read)   file_args.share  |= FILE_SHARE_READ;
         if (share_write)  file_args.share  |= FILE_SHARE_WRITE;
         if (share_delete) file_args.share  |= FILE_SHARE_DELETE;
@@ -77,8 +89,8 @@ namespace sld {
         }
 
         // create file
-        HANDLE win32_file_handle = = CreateFile(
-            (LPCSTR)path,
+        file->handle = CreateFile(
+            path,
             file_args.access,
             file_args.share,
             file_args.security,
@@ -87,337 +99,297 @@ namespace sld {
             file_args.template_handle
         );
 
-        // set file pointer
-        LARGE_INTEGER buffer_granularity;
-        buffer_granularity.QuadPart = win32_file_get_buffer_granularity();
-        bool did_set_pointer = true;
-        did_set_pointer &= SetFilePointerEx(
-            win32_file_handle,  // hFile
-            buffer_granularity, // liDistanceToMove
-            NULL,               // lpNewFilePointer
-            FILE_BEGIN          // dwMoveMethod
-        ); 
-        did_set_pointer &= SetEndOfFile(win32_file_handle);
-        assert(did_set_pointer);
-
-        // create the map
-        HANDLE win32_map_handle = CreateFileMapping(
-            win32_file_handle, // hFile
-            NULL,              // lpFileMappingAttributes
-            PAGE_READWRITE,    // flProtect
-            0,                 // dwMaximumSizeHigh
-            0,                 // dwMaximumSizeLow
-            NULL               // lpName
-        );
-        if (win32_map_handle == NULL) {
-            const DWORD win32_error = GetLastError();
-            const bool did_close    = CloseHandle(win32_file_handle);
-            file->error             = win32_file_get_error_code(win32_error);
-            return(false);
-        }
-
-        // map the virtual buffer
-        void* buffer_memory = MapViewOfFile(
-            win32_map_handle,    // hFileMappingObject
-            FILE_MAP_ALL_ACCESS, // dwDesiredAccess
-            0,                   // dwFileOffsetHigh
-            0,                   // dwFileOffsetLow
-            0                    // dwNumberOfBytesToMap
-        );
-        if (memory == NULL) {
-            const DWORD win32_error = GetLastError();
-            file->error             = win32_file_get_error_code(win32_error);
-            const bool did_close    = (
-                CloseHandle(win32_file_handle) &&
-                CloseHandle(win32_map_handle)
-            );
-            assert(did_close);
-            return(false);
-        }   
-
-        // zero the overlapped structure
-        LPOVERLAPPED overlapped = win32_file_get_overlapped(file);    
-        ZeroMemory(overlapped, sizeof(OVERLAPPED));
-
-        // initialize the file structure and return
-        file->handle.val                 = win32_file_handle;
-        file->map.val                    = win32_map_handle;
-        file->error                      = win32_file_error_success(); 
-        file->vbuffer.data        = buffer_memory;
-        file->vbuffer.size        = buffer_granularity.QuadPart;
-        file->vbuffer.cursor      = 0;
-        file->vbuffer.transferred = 0;
-        bool did_initialize = (
-            file->handle.val          != NULL &&
-            file->map.val             != NULL &&
-            file->vbuffer.data != NULL
-        );
-        assert(did_initialize);
-        return(true);
+        const bool did_create = (file->handle != INVALID_HANDLE_VALUE);
+        if (!did_create) {
+            win32_file_set_last_error();
+        }        
+        return(did_create);
     }
 
     SLD_API_OS_FUNC bool
-    win32_file_virtual_buffer_flush(
-        os_file_t*                file,
-        os_file_virtual_buffer_t* virtual_buffer) {
-
-    }
-
-    SLD_API_OS_FUNC u64
-    win32_file_get_size(
+    win32_file_close(
         os_file_t* file) {
 
         assert(file);
 
-        static LPDWORD win32_file_size_high = NULL;
-        
-        LARGE_INTEGER size_large_int = {0};
-        const bool    is_valid       = GetFileSizeEx((HANDLE)file->handle.val, size_large_int);
-        const DWORD   win32_error    = GetLastError();
+        win32_file_clear_last_error();
 
-        u64 size = 0;
-        if (is_valid) {
-            file->error = win32_file_error_success();
-            size        = (u64)size_large_int.QuadPart;               
-        } 
-        else {
-            file->error = win32_file_get_error_code(win32_error);
-            size        = OS_FILE_INVALID_SIZE 
+        const bool did_close = (bool)CloseHandle(file->handle);
+        if (!did_close) {
+            win32_file_set_last_error();
         }
 
-        return(size);
-    }
-
-    SLD_API_OS_FUNC const os_file_error_t
-    win32_file_read(
-        const os_file_handle_t handle,
-        os_file_buffer_t*      buffer) {
-
-        OVERLAPPED overlapped;
-        ZeroMemory(&overlapped, sizeof(overlapped));
-        overlapped.Offset = buffer->cursor;
-
-        BOOL result = ReadFile(
-            (HANDLE)handle.val,            // hFile
-            (LPVOID)buffer->data,          // lpBuffer
-            (DWORD)buffer->size,           // nNumberOfBytesToRead
-            (LPDWORD)&buffer->transferred, // lpNumberOfBytesRead
-            &overlapped                    // lpOverlapped
-        );
-
-        // get the last error
-        DWORD      win32_error   = GetLastError();
-        const bool io_is_pending = !result && (win32_error == ERROR_IO_PENDING); 
-        
-        // if its pending, try waiting
-        if (io_is_pending) {
-            const DWORD wait_result = WaitForSingleObject((HANDLE)handle.val, INFINITE);
-            win32_error = (wait_result == WAIT_OBJECT_0) 
-                ? ERROR_SUCCESS
-                : GetLastError();
-
-        }
-        // otherwise, get the last error
-        else {
-            win32_error = result ? ERROR_SUCCESS : GetLastError(); 
-        }
-
-        // translate the error
-        buffer->cursor += buffer->transferred;
-        const os_file_error_t error = win32_file_get_error_code(win32_error);
-        return(error);
-    }
-
-    SLD_API_OS_FUNC const os_file_error_t
-    win32_file_write(
-        const os_file_handle_t handle,
-        os_file_buffer_t*      buffer) {
-
-        OVERLAPPED overlapped;
-        ZeroMemory(&overlapped, sizeof(overlapped));
-        overlapped.Offset = buffer->cursor;
-
-        // write the file
-        const BOOL result = WriteFile(
-            (HANDLE)handle.val,           // hFile,
-            (LPVOID)buffer->data,          // lpBuffer,
-            (DWORD)buffer->size,           // nNumberOfBytesToWrite,
-            (LPDWORD)&buffer->transferred, // lpNumberOfBytesWritten,
-            &overlapped                   // lpOverlapped
-        );
-
-        // get the last error
-        DWORD      win32_error   = GetLastError();
-        const bool io_is_pending = !result && (win32_error == ERROR_IO_PENDING); 
-        
-        // if its pending, try waiting
-        if (io_is_pending) {
-            const DWORD wait_result = WaitForSingleObject((HANDLE)handle.val, INFINITE);
-            win32_error = (wait_result == WAIT_OBJECT_0) 
-                ? ERROR_SUCCESS
-                : GetLastError();
-        }
-        // otherwise, get the last error
-        else {
-            win32_error = result ? ERROR_SUCCESS : GetLastError(); 
-        }
-
-        buffer->cursor += buffer->transferred;
-
-        // translate the error
-        const os_file_error_t error = win32_file_get_error_code(win32_error);
-        return(error);
-    }
-
-    SLD_API_OS_FUNC const os_file_error_t
-    win32_file_read_async(
-        const os_file_handle_t   handle,
-        os_file_buffer_t*        buffer,
-        os_file_async_context_t* context) {
-
-        os_file_os_context_t* os_context = context->os;
-
-        LPOVERLAPPED overlapped = (LPOVERLAPPED)os_context->data;
-        overlapped->Pointer     = (PVOID)context->callback;
-        overlapped->Offset      = buffer->cursor;
-
-        const bool result = ReadFileEx(
-            (HANDLE)handle.val,       // hFile 
-            (LPVOID)buffer->data,      // lpBuffer 
-            (DWORD)buffer->size,       // nNumberOfBytesToRead 
-            overlapped,               // lpOverlapped 
-            win32_file_async_callback // lpCompletionRoutine 
-        );
-
-        const DWORD win32_error = GetLastError();
-
-        const os_file_error_t error = (result)
-            ? win32_file_error_success()
-            : win32_file_get_error_code(win32_error);
-        return(error);
-    }
-
-    SLD_API_OS_FUNC const os_file_error_t
-    win32_file_write_async(
-        const os_file_handle_t   handle,
-        os_file_buffer_t*        buffer,
-        os_file_async_context_t* context) {
-
-        os_file_os_context_t* os_context = context->os;
-
-        LPOVERLAPPED overlapped = (LPOVERLAPPED)os_context->data;
-        overlapped->Pointer     = (PVOID)context->callback;
-        overlapped->Offset      = buffer->cursor;
-
-        const bool result = WriteFileEx(
-            (HANDLE)handle.val,       // hFile 
-            (LPVOID)buffer->data,     // lpBuffer 
-            (DWORD)buffer->size,      // nNumberOfBytesToRead 
-            overlapped,               // lpOverlapped 
-            win32_file_async_callback // lpCompletionRoutine 
-        );
-
-        const DWORD win32_error = GetLastError();
-
-        const os_file_error_t error = (result)
-            ? win32_file_error_success()
-            : win32_file_get_error_code(win32_error);
-        return(error);
-    }
-
-    SLD_API_OS_INTERNAL const os_file_error_t
-    win32_file_get_working_directory(
-        os_file_path_cstr_t& file_path) {
-
-        constexpr u32 buffer_size = sizeof(os_file_path_cstr_t::buffer);
-        
-        DWORD result = GetCurrentDirectory(buffer_size, (LPSTR)file_path.buffer);
-
-        const bool did_succeed = (
-            result != 0 ||
-            result <= buffer_size
-        );
-
-        const os_file_error_t error_code = (did_succeed)
-            ? win32_file_error_success()
-            : win32_file_get_error_code(result);
-        
-        return(error_code);
+        file->handle = INVALID_HANDLE_VALUE;
+        return(did_close);
     }
 
     SLD_API_OS_FUNC bool
-    win32_file_dialog_open(
-        const cchar*             path,
-        const os_window_handle_t window_handle) {
+    win32_file_create_io(
+        os_file_t*    file,
+        os_file_io_t* io) {
 
-        return(false);
+        assert(file != NULL && io != NULL);
+        win32_file_clear_last_error();
 
+        // initialize the overlapped structure
+        LPOVERLAPPED overlapped = win32_file_get_overlapped(io);    
+        ZeroMemory(overlapped, sizeof(OVERLAPPED));
+        overlapped->hEvent = CreateEvent(NULL, true, false, NULL);
+        
+        const bool did_create = (overlapped->hEvent != NULL);
+        if (!did_create) {
+            win32_file_set_last_error();
+        }
+
+        return(did_create);
     }
 
+    SLD_API_OS_FUNC bool
+    win32_file_destroy_io(
+        os_file_t*    file,
+        os_file_io_t* io) {
+
+        assert(file != NULL && io != NULL);
+        win32_file_clear_last_error();
+
+        LPOVERLAPPED overlapped = win32_file_get_overlapped(io);    
+        ZeroMemory(overlapped, sizeof(OVERLAPPED));
+
+        const bool did_destroy = (bool)CloseHandle(overlapped->hEvent);
+        if (!did_destroy) {
+            win32_file_set_last_error();
+        }
+
+        return(did_destroy);
+    }
+
+    SLD_API_OS_FUNC bool
+    win32_file_create_map(
+        os_file_t*         file,
+        os_file_vbuffer_t* vbuffer) {
+
+        assert(
+            file          != NULL &&
+            vbuffer       != NULL &&
+            vbuffer->map  == NULL &&
+            vbuffer->data == NULL
+        );
+
+        // get the file size
+        HANDLE        file_handle = (HANDLE)file->handle;
+        LARGE_INTEGER file_size   = {0};
+        if (!GetFileSizeEx(file->handle, &file_size)) {
+            win32_file_set_last_error();
+            return(false);
+        }
+
+        // use the larger size and align
+        // by the granularity
+        u64 file_buffer_size = (file_size.QuadPart > vbuffer->size)
+            ? file_size.QuadPart
+            : vbuffer->size;
+        static const u64 granularity = win32_file_get_buffer_granularity();
+        file_buffer_size             = size_align_pow_2(file_buffer_size, granularity);
+
+        // set the end of the file
+        static const PLARGE_INTEGER file_pointer_new         = NULL;
+        static const DWORD          file_pointer_move_method = FILE_BEGIN; 
+        (void)SetFilePointerEx(
+            file_handle,
+            file_buffer_size,
+            file_pointer_new,
+            file_pointer_move_method
+        );
+        (void)SetEndOfFile(file_handle);
+
+        // create the map
+        static const LPSECURITY_ATTRIBUTES file_map_attributes    = NULL;
+        static const DWORD                 file_map_protect       = FILE_MAP_ALL_ACCESS;
+        static const DWORD                 file_map_max_size_high = 0;
+        static const DWORD                 file_map_max_size_low  = 0;
+        static const LPCSTR                file_map_name          = NULL;
+        HANDLE file_map_handle = CreateFileMapping(
+            file_handle,
+            file_map_attributes,
+            file_map_protect,
+            file_map_max_size_high,
+            file_map_max_size_low,
+            file_map_name
+        );
+        if (!file_map_handle) {
+            win32_file_set_last_error();
+            return(false);
+        } 
+
+        // map the file to the buffer
+        static const DWORD file_data_access = PAGE_READWRITE;
+        static const DWORD file_offset_high = 0;
+        static const DWORD file_offset_low  = 0;
+        PVOID file_data = MapViewOfFile(
+            file_map_handle,
+            file_data_access,
+            file_offset_high,
+            file_offset_low,
+        );
+        if (!file_data) {
+            win32_file_set_last_error();
+            (void)CloseHandle(file_map_handle);
+            return(false);
+        }
+
+        // set the buffer properties
+        vbuffer->map    = file_map_handle;
+        vbuffer->data   = file_data;
+        vbuffer->size   = file_buffer_size;
+        vbuffer->offset = 0;
+        vbuffer->cursor = 0;
+        assert(
+            vbuffer->map  != NULL
+            vbuffer->data != NULL
+            vbuffer->size != 0
+        );
+        return(true);
+    }
+
+    SLD_API_OS_FUNC bool
+    win32_file_map_to_buffer(
+        os_file_map_t*    map,
+        os_file_buffer_t* buffer
+    );
+
+    SLD_API_OS_FUNC bool 
+    win32_file_destroy_virtual_buffer(
+        os_file_t*         file,
+        os_file_vbuffer_t* vbuffer) {
+
+        assert(file != NULL && vbuffer != NULL);
+
+        UnmapViewOfFile(vbuffer->data);
+        CloseHandle(vbuffer->map);
+    }
+
+    SLD_API_OS_FUNC os_file_error_t
+    win32_file_get_last_error(
+        void) {
+
+        return(_file_error);
+    }
+
+    SLD_API_OS_FUNC bool
+    win32_file_io_read(
+        os_file_t*        file,
+        os_file_io_t*     io,
+        os_file_buffer_t* buffer) {
+
+        assert(
+            file           != NULL &&
+            io             != NULL &&
+            buffer         != NULL &&            
+            buffer->offset <  buffer->size
+        );
+        win32_file_clear_last_error();
+
+        HANDLE       read_handle            = (HANDLE)file->handle; 
+        LPOVERLAPPED read_overlapped        = win32_file_get_overlapped(io);
+        LPDWORD      read_bytes_transferred = NULL; // null because overlapped is tracking io
+        LPVOID       read_data              = (LPVOID)(((addr)buffer->data) + buffer->offset);
+        DWORD        read_size              = (buffer->size - buffer->offset);
+        overlapped->Offset = buffer->cursor;
+
+        const bool did_read = ReadFile(
+            read_handle,
+            read_overlapped,
+            read_bytes_transferred,
+            read_data,
+            read_size
+        );
+
+        if (!did_read) {
+            win32_file_set_last_error();
+        }
+        return(did_read);
+    }
+    
+    SLD_API_OS_FUNC bool
+    win32_file_io_write(
+        const os_file_t   file,
+        os_file_io_t*     io,
+        os_file_buffer_t* buffer) {
+
+        assert(
+            file           != NULL &&
+            io             != NULL &&
+            buffer         != NULL &&            
+            buffer->offset <  buffer->size
+        );
+        win32_file_clear_last_error();
+
+        HANDLE       write_handle            = (HANDLE)file->handle; 
+        LPOVERLAPPED write_overlapped        = win32_file_get_overlapped(io);
+        LPDWORD      write_bytes_transferred = NULL; // null because overlapped is tracking io
+        LPVOID       write_data              = (LPVOID)(((addr)buffer->data) + buffer->offset);
+        DWORD        write_size              = (buffer->size - buffer->offset);
+        overlapped->Offset = buffer->cursor;
+
+        const bool did_read = WriteFile(
+            write_handle,
+            write_overlapped,
+            write_bytes_transferred,
+            write_data,
+            write_size
+        );
+
+        if (!did_read) {
+            win32_file_set_last_error();
+        }
+        return(did_read);
+    }
 
     //-------------------------------------------------------------------
     // INTERNAL
     //-------------------------------------------------------------------
 
-    SLD_API_OS_INTERNAL const os_file_error_t
-    win32_file_get_error_code(
-        const DWORD win32_error) {
-
-        os_file_error_t error;
-
-        switch (win32_error) {
-            case (ERROR_SUCCESS):              { error.val = os_file_error_e_success;             return(error); }
-            case (ERROR_INVALID_PARAMETER):    { error.val = os_file_error_e_invalid_args;        return(error); }
-            case (ERROR_INVALID_HANDLE):       { error.val = os_file_error_e_invalid_handle;      return(error); }
-            case (ERROR_SECTOR_NOT_FOUND):     { error.val = os_file_error_e_invalid_disk;        return(error); }
-            case (ERROR_DEVICE_NOT_CONNECTED): { error.val = os_file_error_e_invalid_device;      return(error); }
-            case (ERROR_INVALID_USER_BUFFER):  { error.val = os_file_error_e_invalid_buffer;      return(error); }
-            case (ERROR_FILE_INVALID):         { error.val = os_file_error_e_invalid_file;        return(error); }
-            case (ERROR_SHARING_VIOLATION):    { error.val = os_file_error_e_sharing_violation;   return(error); }
-            case (ERROR_ALREADY_EXISTS):       { error.val = os_file_error_e_already_exists;      return(error); }
-            case (ERROR_FILE_EXISTS):          { error.val = os_file_error_e_already_exists;      return(error); }
-            case (ERROR_FILE_NOT_FOUND):       { error.val = os_file_error_e_not_found;           return(error); }
-            case (ERROR_ACCESS_DENIED):        { error.val = os_file_error_e_access_denied;       return(error); }
-            case (ERROR_PIPE_BUSY):            { error.val = os_file_error_e_pipe_busy;           return(error); }
-            case (ERROR_HANDLE_EOF):           { error.val = os_file_error_e_reached_end_of_file; return(error); }
-            case (ERROR_BROKEN_PIPE):          { error.val = os_file_error_e_broken_pipe;         return(error); }
-            case (ERROR_NO_DATA):              { error.val = os_file_error_e_no_data;             return(error); }
-            case (ERROR_MORE_DATA):            { error.val = os_file_error_e_more_data;           return(error); }
-            case (ERROR_IO_INCOMPLETE):        { error.val = os_file_error_e_io_incomplete;       return(error); }
-            case (ERROR_IO_PENDING):           { error.val = os_file_error_e_io_pending;          return(error); }
-            case (ERROR_OPERATION_ABORTED):    { error.val = os_file_error_e_operation_aborted;   return(error); }
-            case (ERROR_CRC):                  { error.val = os_file_error_e_disk_io_failure;     return(error); }
-            case (ERROR_DISK_CORRUPT):         { error.val = os_file_error_e_disk_corrupt;        return(error); }
-            case (ERROR_NOT_READY):            { error.val = os_file_error_e_device_not_ready;    return(error); }
-            case (ERROR_GEN_FAILURE):          { error.val = os_file_error_e_device_failure;      return(error); }
-            case (ERROR_NOT_ENOUGH_MEMORY):    { error.val = os_file_error_e_out_of_memory;       return(error); }
-            default:                           { error.val = os_file_error_e_unknown;             return(error); }
-        }
-
-        return(error);
-    }
-
-    SLD_API_OS_INTERNAL const os_file_error_t&
-    win32_file_error_success(
+    SLD_API_OS_INTERNAL void
+    win32_file_clear_last_error(
         void) {
-
-        static const os_file_error_t error = { os_file_error_e_success };
-        return(error);
+        
+        _file_error = os_file_error_e_success;
     }
 
     SLD_API_OS_INTERNAL void
-    win32_file_async_callback(
-        DWORD        error_code,
-        DWORD        bytes_transferred,
-        LPOVERLAPPED overlapped) {
+    win32_file_set_last_error(
+        void) {
 
-        if (!overlapped) return;
+        const DWORD win32_error = GetLastError();
 
-        auto context = (os_file_callback_context_t*)overlapped->Pointer;
-
-        const os_file_error_t error = win32_file_get_error_code(error_code);
-
-        context->func(context->data, error, bytes_transferred);
+        switch (win32_error) {
+            case (ERROR_SUCCESS):              { _file_error = os_file_error_e_success;             }
+            case (ERROR_INVALID_PARAMETER):    { _file_error = os_file_error_e_invalid_args;        }
+            case (ERROR_INVALID_HANDLE):       { _file_error = os_file_error_e_invalid_handle;      }
+            case (ERROR_SECTOR_NOT_FOUND):     { _file_error = os_file_error_e_invalid_disk;        }
+            case (ERROR_DEVICE_NOT_CONNECTED): { _file_error = os_file_error_e_invalid_device;      }
+            case (ERROR_INVALID_USER_BUFFER):  { _file_error = os_file_error_e_invalid_buffer;      }
+            case (ERROR_FILE_INVALID):         { _file_error = os_file_error_e_invalid_file;        }
+            case (ERROR_SHARING_VIOLATION):    { _file_error = os_file_error_e_sharing_violation;   }
+            case (ERROR_ALREADY_EXISTS):       { _file_error = os_file_error_e_already_exists;      }
+            case (ERROR_FILE_EXISTS):          { _file_error = os_file_error_e_already_exists;      }
+            case (ERROR_FILE_NOT_FOUND):       { _file_error = os_file_error_e_not_found;           }
+            case (ERROR_ACCESS_DENIED):        { _file_error = os_file_error_e_access_denied;       }
+            case (ERROR_PIPE_BUSY):            { _file_error = os_file_error_e_pipe_busy;           }
+            case (ERROR_HANDLE_EOF):           { _file_error = os_file_error_e_reached_end_of_file; }
+            case (ERROR_BROKEN_PIPE):          { _file_error = os_file_error_e_broken_pipe;         }
+            case (ERROR_NO_DATA):              { _file_error = os_file_error_e_no_data;             }
+            case (ERROR_MORE_DATA):            { _file_error = os_file_error_e_more_data;           }
+            case (ERROR_IO_INCOMPLETE):        { _file_error = os_file_error_e_io_incomplete;       }
+            case (ERROR_IO_PENDING):           { _file_error = os_file_error_e_io_pending;          }
+            case (ERROR_OPERATION_ABORTED):    { _file_error = os_file_error_e_operation_aborted;   }
+            case (ERROR_CRC):                  { _file_error = os_file_error_e_disk_io_failure;     }
+            case (ERROR_DISK_CORRUPT):         { _file_error = os_file_error_e_disk_corrupt;        }
+            case (ERROR_NOT_READY):            { _file_error = os_file_error_e_device_not_ready;    }
+            case (ERROR_GEN_FAILURE):          { _file_error = os_file_error_e_device_failure;      }
+            case (ERROR_NOT_ENOUGH_MEMORY):    { _file_error = os_file_error_e_out_of_memory;       }
+            default:                           { _file_error = os_file_error_e_unknown;             }
+        }
     }
 
     SLD_API_OS_INTERNAL const u64
@@ -438,9 +410,24 @@ namespace sld {
 
     SLD_API_OS_INTERNAL LPOVERLAPPED
     win32_file_get_overlapped(
-        os_file_t* file) {
+        os_file_io_t* io) {
 
-        LPOVERLAPPED overlapped = (LPOVERLAPPED)file->io.data;
+        LPOVERLAPPED overlapped = (LPOVERLAPPED)io->data;
+        assert(overlapped);
         return(overlapped);
     }
+
+    //-------------------------------------------------------------------
+    // FUNCTION POINTERS
+    //-------------------------------------------------------------------
+
+    os_file_open_f           os_file_open           = win32_file_open; 
+    //os_file_io_read_f        os_file_io_read           = win32_file_read; 
+    //os_file_io_write_f       os_file_io_write          = win32_file_write; 
+    //os_file_read_async_f     os_file_read_async     = win32_file_read_async; 
+    //os_file_write_async_f    os_file_write_async    = win32_file_write_async; 
+    //os_file_io_check_async_f os_file_io_check_async = win32_file_io_check_async; 
+    //os_file_io_wait_f        os_file_io_wait        = win32_file_io_wait; 
+    // os_file_get_size_f       os_file_get_size       = win32_file_get_size; 
+    //os_file_close_f          os_file_close          = win32_file_close; 
 };
