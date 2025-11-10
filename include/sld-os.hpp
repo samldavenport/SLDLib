@@ -84,12 +84,10 @@ namespace sld {
     //-------------------------------------------------------------------
 
     SLD_API_OS os_file_open_f                   os_file_open;
-    SLD_API_OS os_file_size_f                   os_file_size;
+    SLD_API_OS os_file_close_f                  os_file_close;
     SLD_API_OS os_file_read_f                   os_file_read;
     SLD_API_OS os_file_write_f                  os_file_write;
-    SLD_API_OS os_file_read_async_f             os_file_read_async;
-    SLD_API_OS os_file_write_async_f            os_file_write_async;
-    SLD_API_OS os_file_get_working_directory_f  os_file_get_working_directory;
+    SLD_API_OS os_file_get_size_f               os_file_get_size;
 
     //-------------------------------------------------------------------
     // THREADS

@@ -7,15 +7,19 @@ namespace sld {
 
     constexpr u32 OS_MONITOR_NAME_WIDTH = 32;
 
-    using  os_monitor_handle_t = vptr_t;
+    struct os_monitor_t;
     struct os_monitor_info_t;
     struct os_monitor_working_area_t;
     
-    using os_monitor_count_f        = u32                 (*) (void);
-    using os_monitor_working_area_f = void                (*) (os_monitor_working_area_t& monitor_working_area);
-    using os_monitor_info_f         = void                (*) (os_monitor_info_t*         monitor_info);
-    using os_monitor_primary_f      = os_monitor_handle_t (*) (void);
-    using os_monitor_from_point_f   = os_monitor_handle_t (*) (const u32 x, const u32 y);
+    using os_monitor_count_f        = u32          (*) (void);
+    using os_monitor_working_area_f = void         (*) (os_monitor_working_area_t& monitor_working_area);
+    using os_monitor_info_f         = void         (*) (os_monitor_info_t*         monitor_info);
+    using os_monitor_primary_f      = os_monitor_t (*) (void);
+    using os_monitor_from_point_f   = os_monitor_t (*) (const u32 x, const u32 y);
+
+    struct os_monitor_t {
+        handle os_handle;
+    };
 
     struct os_monitor_working_area_t {
         u32 virtual_pixel_width;

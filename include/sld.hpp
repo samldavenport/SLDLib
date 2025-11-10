@@ -71,62 +71,6 @@ namespace sld {
     typedef u32      pad32;
     typedef u64      pad64;
 
-    // structured
-
-    //-------------------------------------------------------------------
-    // STRUCTURED TYPES
-    //-------------------------------------------------------------------
-
-
-    template<typename _t>
-    struct structured_type_t {
-
-        _t val;
-
-        constexpr          structured_type_t()     : val(0) {}
-        constexpr explicit structured_type_t(_t v) : val(v) {}
-
-        // assignment
-        constexpr structured_type_t& operator=  (_t v)                            noexcept       { val =  v;          return *this;          }
-        constexpr structured_type_t& operator|= (const structured_type_t& other)  noexcept       { val |= other.val; return *this; }
-        constexpr structured_type_t& operator&= (const structured_type_t& other)  noexcept       { val &= other.val; return *this; }
-        constexpr structured_type_t& operator^= (const structured_type_t& other)  noexcept       { val ^= other.val; return *this; }
-        constexpr structured_type_t& operator|= (_t v)                            noexcept       { val |= v;         return *this; }
-        constexpr structured_type_t& operator&= (_t v)                            noexcept       { val &= v;         return *this; }
-        constexpr structured_type_t& operator^= (_t v)                            noexcept       { val ^= v;         return *this; }
-
-        // comparisons
-        constexpr bool               operator==  (const structured_type_t& other) const noexcept { return val == other.val; }
-        constexpr bool               operator!=  (const structured_type_t& other) const noexcept { return val != other.val; }
-        constexpr bool               operator==  (_t v)                           const noexcept { return val == v;         }
-        constexpr bool               operator!=  (_t v)                           const noexcept { return val != v;         }
-
-        // bitwise
-        constexpr structured_type_t  operator|   (const structured_type_t& other) const noexcept { return structured_type_t(val | other.val); }
-        constexpr structured_type_t  operator&   (const structured_type_t& other) const noexcept { return structured_type_t(val & other.val); }
-        constexpr structured_type_t  operator^   (const structured_type_t& other) const noexcept { return structured_type_t(val ^ other.val); }
-        constexpr structured_type_t  operator|   (_t v)                           const noexcept { return structured_type_t(val | v);         }
-        constexpr structured_type_t  operator&   (_t v)                           const noexcept { return structured_type_t(val & v);         }
-        constexpr structured_type_t  operator^   (_t v)                           const noexcept { return structured_type_t(val ^ v);         }
-        constexpr structured_type_t  operator~   (void)                           const noexcept { return structured_type_t(~val);            }
-        constexpr structured_type_t  operator<<  (int bits)                       const noexcept { return structured_type_t(val << bits);     }
-        constexpr structured_type_t  operator>>  (int bits)                       const noexcept { return structured_type_t(val >> bits);     }
-        constexpr structured_type_t& operator<<= (int bits)                       noexcept       { val <<= bits; return *this;                }
-        constexpr structured_type_t& operator>>= (int bits)                       noexcept       { val >>= bits; return *this;                }
-
-        // bool
-        explicit constexpr operator bool (void) const noexcept { return(val > 0); }
-    };
-
-    using  s32_t  = structured_type_t<s32>;
-    using  s64_t  = structured_type_t<s64>;
-    using  u32_t  = structured_type_t<u32>;
-    using  u64_t  = structured_type_t<u64>;
-    using  f32_t  = structured_type_t<f32>;
-    using  f64_t  = structured_type_t<f64>;
-    using  vptr_t = structured_type_t<vptr>;
-
-
     //-------------------------------------------------------------------
     // SIZE UTILITIES
     //-------------------------------------------------------------------
