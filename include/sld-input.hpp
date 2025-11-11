@@ -17,7 +17,7 @@ namespace sld {
 
     struct input_mouse_t;
     struct input_keyboard_t;
-    struct input_keycode_t : u16_t { };
+    struct input_keycode_t;
     struct input_gamepad_t;
     struct input_gamepad_stick_t;
     struct input_gamepad_triggers_t;
@@ -26,6 +26,10 @@ namespace sld {
     SLD_API void input_keyboard_add_key_down (input_keyboard_t* keyboard, const input_keycode_t keycode);
     SLD_API void input_keyboard_add_key_up   (input_keyboard_t* keyboard, const input_keycode_t keycode);
     SLD_API void input_keyboard_reset        (input_keyboard_t* keyboard);
+
+    struct input_keycode_t {
+        u16 val;
+    };
 
     struct input_keyboard_t {
         struct {
@@ -37,6 +41,8 @@ namespace sld {
             input_keycode_t up   [INPUT_ARRAY_SIZE_KEYCODE];       
         } keycode_array;
     };
+
+
 
     enum input_keycode_e {
         

@@ -32,77 +32,88 @@ namespace sld {
     };
 
     // common
-    const os_window_error_t  win32_window_error_get_last (void);
-    const os_window_error_t  win32_window_error_success  (void);
-    const os_window_error_t  win32_window_process_events (const os_window_handle_t handle, os_window_update_t& update);
-    bool                     win32_window_peek_message   (win32_window_message_peek_args_t& peek_args);
+    const os_window_error_s32  win32_window_get_last_error (void);
+    const os_window_error_s32  win32_window_error_success  (void);
+    const os_window_error_s32  win32_window_process_events (os_window_t* window, os_window_update_t* update);
+    bool                       win32_window_peek_message   (win32_window_message_peek_args_t& peek_args);
 
     //-------------------------------------------------------------------
     // OS API
     //-------------------------------------------------------------------
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC bool
     win32_window_destroy(
-        const os_window_handle_t handle) {
+        os_window_t* window) {
 
-        const os_window_error_t error = win32_window_error_success();
+        //TODO
+        assert(window);
+        const os_window_error_s32 error = win32_window_error_success();
 
         return(error);
     }
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC bool
     win32_window_show(
-        const os_window_handle_t handle) {
+        os_window_t* window) {
+
+        assert(window);
 
         static const s32 cmd_show_true  = 1;
-        const bool       result         = ShowWindow((HWND)handle.val, cmd_show_true);
+        const auto       window_handle  = (HWND)window->os_handle;
+        const bool       result         = ShowWindow(window_handle, cmd_show_true);
 
-        const os_window_error_t error = (result == true) 
+        const os_window_error_s32 error = (result == true) 
             ? win32_window_error_success  ()
-            : win32_window_error_get_last ();
+            : win32_window_get_last_error ();
 
         return(error);
     }
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC bool
     win32_window_get_size(
-        const os_window_handle_t handle,
-        os_window_size_t&        size) {
+        os_window_t*      window,
+        os_window_size_t* size) {
         
-        RECT window_rect;
+        assert(window != NULL && size != NULL);
 
-        const bool result = GetWindowRect((HWND)handle.val, &window_rect);
-        size.width  = (window_rect.right  - window_rect.left);  
-        size.height = (window_rect.bottom - window_rect.top);  
+        const auto window_handle  = (HWND)window->os_handle;
+        RECT       window_rect;
 
-        const os_window_error_t error = (result == true) 
+        const bool result = GetWindowRect(window_handle, &window_rect);
+        size->width  = (window_rect.right  - window_rect.left);  
+        size->height = (window_rect.bottom - window_rect.top);  
+
+        const os_window_error_s32 error = (result == true) 
             ? win32_window_error_success  ()
-            : win32_window_error_get_last ();
+            : win32_window_get_last_error ();
 
         return(error);
     }
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC bool
     win32_window_get_position(
-        const os_window_handle_t handle,
-        os_window_pos_t&         position) {
+        os_window_t*     window,
+        os_window_pos_t* position) {
 
-        RECT window_rect;
+        assert(window != NULL && position != NULL);
 
-        const bool result = GetWindowRect((HWND)handle.val, &window_rect);
+        const auto window_handle  = (HWND)window->os_handle;
+        RECT       window_rect;
+
+        const bool result = GetWindowRect(window_handle, &window_rect);
         position.x = window_rect.left;
         position.y = window_rect.top;
 
-        const os_window_error_t error = (result == true) 
+        const os_window_error_s32 error = (result == true) 
             ? win32_window_error_success  ()
-            : win32_window_error_get_last ();
+            : win32_window_get_last_error ();
 
         return(error);
     }
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC bool
     win32_window_open_file_dialog(
-        const os_window_handle_t handle,
+        os_window_t* window,
         os_window_dialog_t&      dialog) {
 
         // initialize the dialog
@@ -123,16 +134,16 @@ namespace sld {
         // display the dialog
         dialog.did_select = GetOpenFileName(&ofn);
         
-        os_window_error_t error = (dialog.did_select)
+        os_window_error_s32 error = (dialog.did_select)
             ? win32_window_error_success()  
-            : win32_window_error_get_last();
+            : win32_window_get_last_error();
 
         return(error);
     }
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC bool
     win32_window_save_file_dialog(
-        const os_window_handle_t handle,
+        os_window_t* window,
         os_window_dialog_t&      dialog) {
 
         // initialize the dialog
@@ -153,9 +164,9 @@ namespace sld {
         // display the dialog
         dialog.did_select = GetSaveFileName(&ofn);
         
-        os_window_error_t error = (dialog.did_select)
+        os_window_error_s32 error = (dialog.did_select)
             ? win32_window_error_success()  
-            : win32_window_error_get_last();
+            : win32_window_get_last_error();
 
         return(error);
     }
@@ -164,11 +175,11 @@ namespace sld {
     // INTERNAL
     //-------------------------------------------------------------------
 
-    SLD_API_OS_INTERNAL const os_window_error_t
-    win32_window_error_get_last(
+    SLD_API_OS_INTERNAL const os_window_error_s32
+    win32_window_get_last_error(
         void) {
         
-        os_window_error_t error;
+        os_window_error_s32 error;
 
         const DWORD win32_error = GetLastError();
         switch (win32_error) {
@@ -191,20 +202,20 @@ namespace sld {
         return(error);
     }
 
-    SLD_API_OS_INTERNAL const os_window_error_t
+    SLD_API_OS_INTERNAL const os_window_error_s32
     win32_window_error_success(
         void) {
 
-        SLD_API_OS_FUNC const os_window_error_t error = { os_window_error_e_success };
+        SLD_API_OS_FUNC bool error = { os_window_error_e_success };
         return(error);
     }
 
-    SLD_API_OS_INTERNAL const os_window_error_t
+    SLD_API_OS_INTERNAL const os_window_error_s32
     win32_window_process_events(
-        const os_window_handle_t handle,
+        os_window_t* window,
         os_window_update_t&      update) {
 
-        os_window_error_t error = win32_window_error_success();
+        os_window_error_s32 error = win32_window_error_success();
 
         update.events.val = os_window_event_e_none;
 

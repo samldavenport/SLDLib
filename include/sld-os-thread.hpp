@@ -5,32 +5,44 @@
 
 namespace sld {
 
-    using os_thread_handle_t           = vptr_t;
-    using os_thread_mutex_handle_t     = vptr_t;
-    using os_thread_condition_handle_t = vptr_t;
-    using os_thread_error_t            = s32_t;
+    using os_thread_error_s32 = s32;
 
-    struct os_thread_callback_data_t;
+    struct os_thread_t;
     struct os_thread_context_t;
+    struct os_thread_mutex_t;
+    struct os_thread_condition_t;
+    struct os_thread_callback_data_t;
 
     using os_thread_callback_function_f   = void (*) (os_thread_context_t& context);
 
-    using os_thread_create_f              = const os_thread_error_t (*) (os_thread_handle_t&            thread_handle);
-    using os_thread_destroy_f             = const os_thread_error_t (*) (const os_thread_handle_t       thread_handle);
-    using os_thread_exit_f                = const os_thread_error_t (*) (const os_thread_handle_t       thread_handle);
-    using os_thread_sleep_f               = const os_thread_error_t (*) (const os_thread_handle_t       thread_handle);     
-    using os_thread_yield_f               = const os_thread_error_t (*) (const os_thread_handle_t       thread_handle);
-    using os_thread_join_f                = const os_thread_error_t (*) (const os_thread_handle_t       thread_handle);
-    using os_thread_mutex_create_f        = const os_thread_error_t (*) (os_thread_mutex_handle_t&      mutex_handle);
-    using os_thread_mutex_destroy_f       = const os_thread_error_t (*) (const os_thread_mutex_handle_t mutex_handle);
-    using os_thread_mutex_lock_f          = const os_thread_error_t (*) (const os_thread_mutex_handle_t mutex_handle);
-    using os_thread_mutex_unlock_f        = const os_thread_error_t (*) (const os_thread_mutex_handle_t mutex_handle);
-    using os_thread_mutex_try_lock_f      = const os_thread_error_t (*) (const os_thread_mutex_handle_t mutex_handle);
-    using os_thread_condition_create_f    = const os_thread_error_t (*) (void);
-    using os_thread_condition_destroy_f   = const os_thread_error_t (*) (void);
-    using os_thread_condition_wait_f      = const os_thread_error_t (*) (void);
-    using os_thread_condition_signal_f    = const os_thread_error_t (*) (void);
-    using os_thread_condition_broadcast_f = const os_thread_error_t (*) (void);
+    using os_thread_create_f              = bool (os_thread_t*       thread);
+    using os_thread_destroy_f             = bool (os_thread_t*       thread);
+    using os_thread_exit_f                = bool (os_thread_t*       thread);
+    using os_thread_sleep_f               = bool (os_thread_t*       thread);     
+    using os_thread_yield_f               = bool (os_thread_t*       thread);
+    using os_thread_join_f                = bool (os_thread_t*       thread);
+    using os_thread_mutex_create_f        = bool (os_thread_mutex_t* mutex);
+    using os_thread_mutex_destroy_f       = bool (os_thread_mutex_t* mutex);
+    using os_thread_mutex_lock_f          = bool (os_thread_mutex_t* mutex);
+    using os_thread_mutex_unlock_f        = bool (os_thread_mutex_t* mutex);
+    using os_thread_mutex_try_lock_f      = bool (os_thread_mutex_t* mutex);
+    using os_thread_condition_create_f    = bool (void);
+    using os_thread_condition_destroy_f   = bool (void);
+    using os_thread_condition_wait_f      = bool (void);
+    using os_thread_condition_signal_f    = bool (void);
+    using os_thread_condition_broadcast_f = bool (void);
+
+    struct os_thread_t {
+        handle os_handle;
+    };
+
+    struct os_thread_mutex_t {
+        handle os_handle;
+    };
+
+    struct os_thread_condition_t {
+        handle os_handle;
+    };
 
     struct os_thread_callback_data_t {
         void* ptr;

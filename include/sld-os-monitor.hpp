@@ -32,13 +32,13 @@ namespace sld {
     };
 
     struct os_monitor_info_t {
-        os_monitor_handle_t handle;
-        u32                 index;
-        u32                 pixel_width;
-        u32                 pixel_height;
-        u32                 position_x;
-        u32                 position_y;
-        cchar               name_cstr[OS_MONITOR_NAME_WIDTH];
+        handle os_handle;
+        u32    index;
+        u32    pixel_width;
+        u32    pixel_height;
+        u32    position_x;
+        u32    position_y;
+        cchar  name_cstr[OS_MONITOR_NAME_WIDTH];
     };
 };
 

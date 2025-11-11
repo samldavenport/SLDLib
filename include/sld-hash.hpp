@@ -65,7 +65,9 @@ namespace sld {
         };
     };
 
-    struct hash32_seed_t : u32_t { }; 
+    struct hash32_seed_t {
+        u32 val;
+    }; 
 };
 
 #endif //SLD_HASH_HPP

@@ -8,31 +8,36 @@
 
 namespace sld {
 
-    using  os_window_handle_t      = vptr_t;
-    using  os_window_error_t       = s32_t;
-    using  os_window_event_flags_t = u32_t; 
-    using  os_window_size_t        = dims_u32_size_t;
-    using  os_window_pos_t         = dims_u32_pos_t;
-    using  os_window_color_t       = color_u32_t;
+    using  os_window_error_s32       = s32;
+    using  os_window_event_flags_u32 = u32; 
+    using  os_window_size_t          = dims_u32_size_t;
+    using  os_window_pos_t           = dims_u32_pos_t;
+    using  os_window_color_t         = color_u32_t;
+    
+    struct os_window_t;
     struct os_window_update_t;
     struct os_window_dialog_t;
 
-    using os_window_create_f             = const os_window_error_t (*) (os_window_handle_t&      window_handle, const cchar* title, const os_window_size_t& size, const os_window_pos_t& position);
-    using os_window_set_viewport_f       = const os_window_error_t (*) (const os_window_handle_t window_handle, const os_window_size_t& size, const os_window_pos_t& position); 
-    using os_window_update_f             = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_update_t&           update);
-    using os_window_get_size_f           = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_size_t&             size);
-    using os_window_get_position_f       = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_pos_t&              position);
-    using os_window_set_clear_color_f    = const os_window_error_t (*) (const os_window_handle_t window_handle, const os_window_color_t&      color);
-    using os_window_destroy_f            = const os_window_error_t (*) (const os_window_handle_t window_handle);
-    using os_window_swap_buffers_f       = const os_window_error_t (*) (const os_window_handle_t window_handle);
-    using os_window_show_f               = const os_window_error_t (*) (const os_window_handle_t window_handle);
-    using os_window_open_file_dialog_f   = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_dialog_t& dialog);
-    using os_window_save_file_dialog_f   = const os_window_error_t (*) (const os_window_handle_t window_handle, os_window_dialog_t& dialog);
+    using os_window_create_f             = bool (*) (os_window_t* window, const cchar* title, const os_window_size_t* size, const os_window_pos_t* position);
+    using os_window_set_viewport_f       = bool (*) (os_window_t* window, const os_window_size_t* size, const os_window_pos_t* position); 
+    using os_window_update_f             = bool (*) (os_window_t* window, os_window_update_t*           update);
+    using os_window_get_size_f           = bool (*) (os_window_t* window, os_window_size_t*             size);
+    using os_window_get_position_f       = bool (*) (os_window_t* window, os_window_pos_t*              position);
+    using os_window_set_clear_color_f    = bool (*) (os_window_t* window, const os_window_color_t*      color);
+    using os_window_open_file_dialog_f   = bool (*) (os_window_t* window, os_window_dialog_t* dialog);
+    using os_window_save_file_dialog_f   = bool (*) (os_window_t* window, os_window_dialog_t* dialog);
+    using os_window_destroy_f            = bool (*) (os_window_t* window);
+    using os_window_swap_buffers_f       = bool (*) (os_window_t* window);
+    using os_window_show_f               = bool (*) (os_window_t* window);
 
+    struct os_window_t {
+        handle              os_handle;
+        os_window_error_s32 error;
+    };
 
     struct os_window_update_t {
         input_keyboard_t*       keyboard;
-        os_window_event_flags_t events;
+        os_window_event_flags_u32 events;
     };
 
     struct os_window_dialog_t {
