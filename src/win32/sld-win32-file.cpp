@@ -3,9 +3,9 @@
 #include <Windows.h>
 #include "sld-os.hpp"
 
-#ifdef     SLD_OS_FILE_IO_SIZE
-#   undef  SLD_OS_FILE_IO_SIZE
-#   define SLD_OS_FILE_IO_SIZE sizeof(OVERLAPPED)
+#ifdef     SLD_OS_FILE_SIZE_IO
+#   undef  SLD_OS_FILE_SIZE_IO
+#   define SLD_OS_FILE_SIZE_IO sizeof(OVERLAPPED)
 #endif
 
 namespace sld {
@@ -14,7 +14,7 @@ namespace sld {
     // GLOBALS
     //-------------------------------------------------------------------
 
-    SLD_GLOBAL os_file_error_t _file_error;
+    SLD_GLOBAL os_file_error_s32 _file_error;
 
     //-------------------------------------------------------------------
     // DECLARATIONS
@@ -135,7 +135,7 @@ namespace sld {
         const bool did_get_size = (bool)GetFileSizeEx(file->os_handle, &size);
 
         if (!did_get_size) {
-            size.QuadPart = OS_FILE_INVALID_SIZE;
+            size.QuadPart = OS_FILE_SIZE_INVALID;
             win32_file_set_last_error();
         }
         return(size.QuadPart);
@@ -170,7 +170,7 @@ namespace sld {
         );
         if (!did_set_pointer) {
             win32_file_set_last_error();
-            return(OS_FILE_INVALID_SIZE);
+            return(OS_FILE_SIZE_INVALID);
         }
 
         // do the read
@@ -190,7 +190,7 @@ namespace sld {
         // return the bytes read
         if (!did_read) {
             win32_file_set_last_error();
-            file_read_size_actual = OS_FILE_INVALID_SIZE;
+            file_read_size_actual = OS_FILE_SIZE_INVALID;
         }
         return(file_read_size_actual);
     }
@@ -224,7 +224,7 @@ namespace sld {
         );
         if (!did_set_pointer) {
             win32_file_set_last_error();
-            return(OS_FILE_INVALID_SIZE);
+            return(OS_FILE_SIZE_INVALID);
         }
 
         // do the write
@@ -244,7 +244,7 @@ namespace sld {
         // return the bytes read
         if (!did_write) {
             win32_file_set_last_error();
-            file_write_size_actual = OS_FILE_INVALID_SIZE;
+            file_write_size_actual = OS_FILE_SIZE_INVALID;
         }
         return(file_write_size_actual);
     }
@@ -261,10 +261,22 @@ namespace sld {
         assert(file != NULL && async != NULL);
         win32_file_clear_last_error();
 
+        async->timeout_ms = 0;
+
         // initialize the overlapped structure
         LPOVERLAPPED overlapped = win32_file_get_overlapped(async);    
         ZeroMemory(overlapped, sizeof(OVERLAPPED));
-        overlapped->hEvent = CreateEvent(NULL, true, false, NULL);
+
+        // create the handle for file events        
+        LPSECURITY_ATTRIBUTES event_attributes    = NULL;
+        BOOL                  event_manual_reset  = TRUE;
+        BOOL                  event_initial_state = FALSE;
+        LPCSTR                event_name          = NULL;
+        overlapped->hEvent = CreateEvent(
+            event_attributes,
+            event_manual_reset,
+            event_initial_state,
+            event_name);
         
         const bool did_create = (overlapped->hEvent != NULL);
         if (!did_create) {
@@ -293,7 +305,6 @@ namespace sld {
         return(did_destroy);
     }
 
-
     SLD_API_OS_FUNC bool
     win32_file_async_read(
         os_file_t*        file,
@@ -302,25 +313,25 @@ namespace sld {
 
         assert(
             file           != NULL &&
-            io             != NULL &&
+            async          != NULL &&
             buffer         != NULL &&            
             buffer->offset <  buffer->size
         );
         win32_file_clear_last_error();
 
         HANDLE       read_handle            = (HANDLE)file->os_handle; 
-        LPOVERLAPPED read_overlapped        = win32_file_get_overlapped(io);
+        LPOVERLAPPED read_overlapped        = win32_file_get_overlapped(async);
         LPDWORD      read_bytes_transferred = NULL; // null because overlapped is tracking io
         LPVOID       read_data              = (LPVOID)(((addr)buffer->data) + buffer->offset);
         DWORD        read_size              = (buffer->size - buffer->offset);
-        overlapped->Offset = buffer->cursor;
+        read_overlapped->Offset = buffer->cursor;
 
         const bool did_read = ReadFile(
             read_handle,
-            read_overlapped,
-            read_bytes_transferred,
             read_data,
-            read_size
+            read_size,
+            read_bytes_transferred,
+            read_overlapped
         );
 
         if (!did_read) {
@@ -330,39 +341,161 @@ namespace sld {
     }
     
     SLD_API_OS_FUNC bool
-    win32_file_io_write(
-        const os_file_t   file,
-        os_file_io_t*     io,
+    win32_file_async_write(
+        os_file_t*        file,
+        os_file_async_t*  async,
         os_file_buffer_t* buffer) {
 
         assert(
             file           != NULL &&
-            io             != NULL &&
+            async          != NULL &&
             buffer         != NULL &&            
             buffer->offset <  buffer->size
         );
         win32_file_clear_last_error();
 
         HANDLE       write_handle            = (HANDLE)file->os_handle; 
-        LPOVERLAPPED write_overlapped        = win32_file_get_overlapped(io);
+        LPOVERLAPPED write_overlapped        = win32_file_get_overlapped(async);
         LPDWORD      write_bytes_transferred = NULL; // null because overlapped is tracking io
         LPVOID       write_data              = (LPVOID)(((addr)buffer->data) + buffer->offset);
         DWORD        write_size              = (buffer->size - buffer->offset);
-        overlapped->Offset = buffer->cursor;
+        write_overlapped->Offset = buffer->cursor;
 
         const bool did_read = WriteFile(
             write_handle,
-            write_overlapped,
-            write_bytes_transferred,
             write_data,
-            write_size
+            write_size,
+            write_bytes_transferred,
+            write_overlapped
         );
 
+        async->state = os_file_async_state_e_success;
         if (!did_read) {
+
             win32_file_set_last_error();
+            async->state = (_file_error == ERROR_IO_PENDING)
+                ? os_file_async_state_e_pending  
+                : os_file_async_state_e_error;
         }
         return(did_read);
     }
+
+    SLD_API_OS_FUNC u64
+    win32_file_async_get_result(
+        os_file_t*       file,
+        os_file_async_t* async) {
+
+        assert(file != NULL && async != NULL);
+
+        win32_file_clear_last_error();
+
+        HANDLE       overlapped_file_handle       = file->os_handle; 
+        LPOVERLAPPED overlapped                   = win32_file_get_overlapped(async);
+        DWORD        overlapped_bytes_transferred = 0;
+        BOOL         overlapped_wait              = FALSE;
+        BOOL         overlapped_result            = GetOverlappedResult(
+            overlapped_file_handle,
+            overlapped,
+            &overlapped_bytes_transferred,
+            overlapped_wait
+        );
+
+        if (!overlapped_result) {
+            win32_file_set_last_error();
+            async->state = (_file_error == ERROR_IO_PENDING)
+                ? os_file_async_state_e_pending  
+                : os_file_async_state_e_error;
+            overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
+        }
+        return(overlapped_bytes_transferred);
+    }
+
+    SLD_API_OS_FUNC u64
+    win32_file_async_wait(
+        os_file_t*       file,
+        os_file_async_t* async) {
+
+        assert(file != NULL && async != NULL);
+
+        win32_file_clear_last_error();
+
+        LPOVERLAPPED overlapped                   = win32_file_get_overlapped(async);
+        DWORD        overlapped_bytes_transferred = 0;
+
+        HANDLE event_handle      = overlapped->hEvent;
+        DWORD  event_timeout_ms  = async->timeout_ms; 
+        DWORD  event_wait_result = WaitForSingleObject(
+            event_handle,
+            event_timeout_ms            
+        );
+
+        switch (event_wait_result) {
+
+            // io complete
+            case (WAIT_OBJECT_0): {
+                HANDLE       overlapped_file_handle = file->os_handle; 
+                LPOVERLAPPED overlapped             = win32_file_get_overlapped(async);
+                BOOL         overlapped_wait        = FALSE;
+                BOOL         overlapped_result      = GetOverlappedResult(
+                    overlapped_file_handle,
+                    overlapped,
+                    &overlapped_bytes_transferred,
+                    overlapped_wait
+                );
+                async->state = os_file_async_state_e_success;
+
+                if (!overlapped_result) {
+                    win32_file_set_last_error();
+                    overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
+                    async->state = os_file_async_state_e_error;
+                }
+            } break;
+
+            // io timeout
+            case (WAIT_TIMEOUT): {
+                win32_file_set_last_error();
+                overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
+                async->state                 = os_file_async_state_e_timeout;
+            } break;
+
+            // io error
+            default: {
+                win32_file_set_last_error();
+                overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
+                async->state                 = os_file_async_state_e_error;
+            } break;
+        }
+
+        return(overlapped_bytes_transferred);
+    }
+
+    SLD_API_OS_FUNC bool
+    win32_file_async_cancel(
+        os_file_t*       file,
+        os_file_async_t* async) {
+
+        assert(file != NULL && async != NULL);
+
+        win32_file_clear_last_error();
+
+        HANDLE       overlapped_file_handle = file->os_handle;
+        LPOVERLAPPED overlapped             = win32_file_get_overlapped(async);
+        bool         did_cancel             = (bool)CancelIoEx(
+            overlapped_file_handle,
+            overlapped
+        );
+
+        async->state = os_file_async_state_e_success;
+        if (!did_cancel) {
+            win32_file_set_last_error();
+            async->state = os_file_async_state_e_error;
+        }
+        return(did_cancel);
+    }
+
+    //-------------------------------------------------------------------
+    // MAP METHODS
+    //-------------------------------------------------------------------
 
     SLD_API_OS_FUNC bool
     win32_file_map_create(
@@ -422,6 +555,10 @@ namespace sld {
         return(true);
     }
 
+    //-------------------------------------------------------------------
+    // BUFFER METHODS
+    //-------------------------------------------------------------------
+
     SLD_API_OS_FUNC bool
     win32_file_buffer_map(
         os_file_buffer_t* buffer,
@@ -468,13 +605,16 @@ namespace sld {
         return(is_unmapped);
     }
 
-    SLD_API_OS_FUNC os_file_error_t
+    //-------------------------------------------------------------------
+    // ERROR METHODS
+    //-------------------------------------------------------------------
+
+    SLD_API_OS_FUNC os_file_error_s32
     win32_file_get_last_error(
         void) {
 
         return(_file_error);
     }
-
 
     //-------------------------------------------------------------------
     // INTERNAL
