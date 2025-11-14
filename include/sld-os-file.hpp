@@ -20,17 +20,22 @@ namespace sld {
     // TYPES
     //-------------------------------------------------------------------
 
-    using os_file_error_s32        = s32;
-    using os_file_access_flags_u32 = u32;
-    using os_file_share_flags_u32  = u32;
-    using os_file_mode_u32         = u32;
-    using os_file_async_state_u32  = u32;
+    enum os_file_access_flag_e : u32;
+    enum os_file_share_flag_e  : u32;
+    enum os_file_mode_e        : u32;
+    enum os_file_async_state_e : u32;
+    enum os_file_error_e       : s32;
 
     struct os_file_t;
     struct os_file_config_t;
     struct os_file_async_t;
     struct os_file_buffer_t;
     struct os_file_mapped_buffer_t;
+    struct os_file_access_flags_t;
+    struct os_file_share_flags_t;
+    struct os_file_error_t;
+    struct os_file_mode_t;
+    struct os_file_async_state_t;
 
     //-------------------------------------------------------------------
     // API
@@ -62,13 +67,19 @@ namespace sld {
     // DEFINITIONS
     //-------------------------------------------------------------------
 
+    struct os_file_error_t        : s32_t { }; 
+    struct os_file_access_flags_t : u32_t { };
+    struct os_file_share_flags_t  : u32_t { };
+    struct os_file_mode_t         : u32_t { }; 
+    struct os_file_async_state_t  : u32_t { }; 
+    
     struct os_file_t {
-        handle            os_handle;
-        os_file_error_s32 error;
+        vptr            handle;
+        os_file_error_t error;
     };
 
     struct os_file_mapped_buffer_t {
-        handle os_handle;
+        vptr   handle;
         byte*  data;
         u64    size;
         u64    offset;
@@ -76,9 +87,9 @@ namespace sld {
     };
 
     struct os_file_async_t {
-        os_file_async_state_u32 state;
-        u32                     timeout_ms;
-        byte                    data[SLD_OS_FILE_SIZE_IO];                 
+        os_file_async_state_t state;
+        u32                   timeout_ms;
+        byte                  data[SLD_OS_FILE_SIZE_IO];                 
     };
 
     struct os_file_buffer_t {
@@ -89,10 +100,10 @@ namespace sld {
     };
 
     struct os_file_config_t {
-        os_file_mode_u32         mode;
-        os_file_access_flags_u32 access_flags;
-        os_file_share_flags_u32  share_flags;
-        bool                     is_async;
+        os_file_mode_t         mode;
+        os_file_access_flags_t access_flags;
+        os_file_share_flags_t  share_flags;
+        bool                   is_async;
     };
 
     //-------------------------------------------------------------------

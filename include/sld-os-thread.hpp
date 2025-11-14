@@ -33,20 +33,20 @@ namespace sld {
     using os_thread_condition_broadcast_f = bool (void);
 
     struct os_thread_t {
-        handle os_handle;
+        vptr os_handle;
     };
 
     struct os_thread_mutex_t {
-        handle os_handle;
+        vptr os_handle;
     };
 
     struct os_thread_condition_t {
-        handle os_handle;
+        vptr os_handle;
     };
 
     struct os_thread_callback_data_t {
-        void* ptr;
-        u64   size;
+        vptr ptr;
+        u64  size;
     };
 
     struct os_thread_context_t {

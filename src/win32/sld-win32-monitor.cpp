@@ -47,7 +47,7 @@ namespace sld {
 
             // copy the win32 info to our structure
             os_monitor_info_t& monitor_info = enumerator->monitor_info[enumerator->index];            
-            monitor_info.os_handle    = (handle)h_monitor;
+            monitor_info.os_handle    = h_monitor;
             monitor_info.index        = enumerator->index;
             monitor_info.pixel_width  = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
             monitor_info.pixel_height = (win32_monitor_info.rcMonitor.bottom - win32_monitor_info.rcMonitor.top); 

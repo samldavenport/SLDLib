@@ -18,7 +18,7 @@ namespace sld {
     using os_monitor_from_point_f   = os_monitor_t (*) (const u32 x, const u32 y);
 
     struct os_monitor_t {
-        handle os_handle;
+        vptr os_handle;
     };
 
     struct os_monitor_working_area_t {
@@ -32,13 +32,13 @@ namespace sld {
     };
 
     struct os_monitor_info_t {
-        handle os_handle;
-        u32    index;
-        u32    pixel_width;
-        u32    pixel_height;
-        u32    position_x;
-        u32    position_y;
-        cchar  name_cstr[OS_MONITOR_NAME_WIDTH];
+        vptr  os_handle;
+        u32   index;
+        u32   pixel_width;
+        u32   pixel_height;
+        u32   position_x;
+        u32   position_y;
+        cchar name_cstr[OS_MONITOR_NAME_WIDTH];
     };
 };
 

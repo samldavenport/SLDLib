@@ -31,7 +31,7 @@ namespace sld {
     using os_window_show_f               = bool (*) (os_window_t* window);
 
     struct os_window_t {
-        handle              os_handle;
+        vptr                os_handle;
         os_window_error_s32 error;
     };
 

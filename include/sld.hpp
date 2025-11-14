@@ -65,11 +65,19 @@ namespace sld {
     // memory
     typedef uint8_t  byte;
     typedef intptr_t addr;
-    typedef void*    handle;
+    typedef void*    vptr;
     typedef u8       pad8;
     typedef u16      pad16;
     typedef u32      pad32;
     typedef u64      pad64;
+
+    //-------------------------------------------------------------------
+    // STRONG TYPES
+    //-------------------------------------------------------------------
+
+    struct u32_t { u32 val; };
+    struct s32_t { s32 val; };
+
 
     //-------------------------------------------------------------------
     // SIZE UTILITIES
@@ -115,11 +123,6 @@ namespace sld {
     SLD_UTILITY bool bit_mask_test (const u32 value, const u32 mask)                   { return((value & mask) > 0);                         }
     SLD_UTILITY void bit_mask_and  (u32& value,      const u32 mask)                   { (value |=  mask);                                   }
     SLD_UTILITY void bit_mask_or   (u32& value,      const u32 mask)                   { (value &= ~mask);                                   }
-
-    //-------------------------------------------------------------------
-    // MEMORY
-    //-------------------------------------------------------------------
-
 };
 
 #endif //SLD_HPP
