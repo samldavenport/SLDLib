@@ -69,7 +69,7 @@ namespace sld {
         can_get &= (attrib != NULL);
         assert(can_get);
 
-        constexpr c8 invalid = 0;
+        constexpr cchar invalid = 0;
         value = (xml_utf8_t*)attrib->as_string(&invalid);
         const bool did_get = (value[0] != invalid); 
         return(did_get);

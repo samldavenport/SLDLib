@@ -17,6 +17,7 @@
 #define SLD_INLINE              inline
 #define SLD_INTERNAL_INLINE     static inline
 #define SLD_INTERNAL            static
+#define SLD_GLOBAL              static
 #define SLD_API_INLINE          inline
 #define SLD_API_INLINE_TEMPLATE template<typename type> inline
 #define SLD_UTILITY             static constexpr
@@ -32,68 +33,50 @@
 namespace sld {
 
     //-------------------------------------------------------------------
-    // PRIMITIVES
+    // PRIMITIVE TYPES
     //-------------------------------------------------------------------
 
     // signed integers
-    typedef int8_t   s8;
-    typedef int16_t  s16;
-    typedef int32_t  s32;
-    typedef int64_t  s64;
+    using s8  = int8_t;
+    using s16 = int16_t;
+    using s32 = int32_t;
+    using s64 = int64_t;
 
     // unsigned integers
-    typedef uint8_t  u8;
-    typedef uint16_t u16;
-    typedef uint32_t u32;
-    typedef uint64_t u64;
+    using u8  = uint8_t;
+    using u16 = uint16_t;
+    using u32 = uint32_t;
+    using u64 = uint64_t;
 
     // floats
-    typedef float    f32;
-    typedef double   f64;
+    using f32 = float;
+    using f64 = double;
 
     // booleans
-    typedef int8_t   b8;
-    typedef int16_t  b16;
-    typedef int32_t  b32;
-    typedef int64_t  b64;
+    using b8  = int8_t;
+    using b16 = int16_t;
+    using b32 = int32_t;
+    using b64 = int64_t;
 
     // chars
-    typedef char      c8;
-    typedef char16_t  c16;
-    typedef char32_t  c32;
-    typedef c8        cchar;
-    typedef c16       wchar;
+    using cchar = char;
+    using wchar = wchar_t;
 
     // memory
-    typedef uint8_t  byte;
-    typedef intptr_t addr;
-    typedef void*    vptr;
-    typedef u8       pad8;
-    typedef u16      pad16;
-    typedef u32      pad32;
-    typedef u64      pad64;
+    using byte  = uint8_t;
+    using addr  = intptr_t;
+    using vptr  = void*;
+    using pad8  = u8;
+    using pad16 = u16;
+    using pad32 = u32;
 
-    // structured
-    struct  s8_t   { s8   val; };
-    struct  s16_t  { s16  val; };
-    struct  s32_t  { s32  val; };
-    struct  s64_t  { s64  val; };
-    struct  u8_t   { u8   val; };
-    struct  u16_t  { u16  val; };
-    struct  u32_t  { u32  val; };
-    struct  u64_t  { u64  val; };
-    struct  f32_t  { f32  val; };
-    struct  f64_t  { f64  val; };
-    struct  b8_t   { b8   val; };
-    struct  b16_t  { b16  val; };
-    struct  b32_t  { b32  val; };
-    struct  b64_t  { b64  val; };
-    struct  c8_t   { c8   val; };
-    struct  c16_t  { c16  val; };
-    struct  c32_t  { c32  val; };
-    struct  byte_t { byte val; };
-    struct  addr_t { addr val; };
-    struct  vptr_t { vptr val; };
+    //-------------------------------------------------------------------
+    // STRONG TYPES
+    //-------------------------------------------------------------------
+
+    struct u32_t  { u32  val; };
+    struct s32_t  { s32  val; };
+    struct vptr_t { vptr val; };
 
     //-------------------------------------------------------------------
     // SIZE UTILITIES
@@ -139,11 +122,6 @@ namespace sld {
     SLD_UTILITY bool bit_mask_test (const u32 value, const u32 mask)                   { return((value & mask) > 0);                         }
     SLD_UTILITY void bit_mask_and  (u32& value,      const u32 mask)                   { (value |=  mask);                                   }
     SLD_UTILITY void bit_mask_or   (u32& value,      const u32 mask)                   { (value &= ~mask);                                   }
-
-    //-------------------------------------------------------------------
-    // MEMORY
-    //-------------------------------------------------------------------
-
 };
 
 #endif //SLD_HPP

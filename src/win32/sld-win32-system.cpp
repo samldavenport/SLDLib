@@ -5,6 +5,9 @@
 
 namespace sld {
 
+    constexpr u32 WIN32_WORKING_DIRECTORY_SIZE = 32;
+
+
     SLD_API_OS_FUNC void
     win32_system_get_cpu_info(
         os_system_cpu_info_t& cpu_info) {
@@ -39,7 +42,20 @@ namespace sld {
     
     SLD_API_OS_FUNC void
     win32_system_debug_print(
-        const c8* debug_string) {
+        const cchar* debug_string) {
 
+    }
+    
+    SLD_API_OS_FUNC const cchar*
+    win32_system_get_working_directory(
+        void) {
+
+        static cchar directory[WIN32_WORKING_DIRECTORY_SIZE];
+
+        const DWORD result      = GetCurrentDirectory(WIN32_WORKING_DIRECTORY_SIZE, (LPSTR)directory);
+        const bool  did_succeed = (result != 0) && (result <= WIN32_WORKING_DIRECTORY_SIZE);
+
+        assert(did_succeed);
+        return(directory);
     }
 };

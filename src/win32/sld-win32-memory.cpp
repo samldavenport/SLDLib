@@ -6,6 +6,37 @@
 namespace sld {
     
     SLD_API_OS_FUNC void*
+    win32_memory_alloc(
+        const u64 size) {
+
+        assert(size != 0);
+
+        void* mem = VirtualAlloc(
+            NULL,                     // no starting address
+            size,                     // size
+            MEM_RESERVE | MEM_COMMIT, // type
+            PAGE_READWRITE            // security
+        );
+
+        return(mem);
+    }
+
+    SLD_API_OS_FUNC bool
+    win32_memory_free(
+        void* start) {
+
+        assert(start != NULL);
+
+        const bool is_free = VirtualFree(
+            start,
+            0,
+            MEM_RELEASE   
+        );
+
+        return(is_free);
+    }
+
+    SLD_API_OS_FUNC void*
     win32_memory_reserve(
         void*     start,
         const u64 size) {
@@ -122,4 +153,6 @@ namespace sld {
         const bool is_committed = (memory_info.State == MEM_COMMIT);
         return(is_committed); 
     }
+
+
 };

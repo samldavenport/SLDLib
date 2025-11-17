@@ -37,25 +37,25 @@ namespace sld {
 
     SLD_INLINE void 
     color_u32_normalize(
-        const color_u32_t& in_color_u32,
-        color_f128_t&     out_color_f128) {
+        const color_u32_t* in_color_u32,
+        color_f128_t*     out_color_f128) {
 
-        out_color_f128.r = (in_color_u32.r * COLOR_NORMAL_FACTOR);
-        out_color_f128.g = (in_color_u32.g * COLOR_NORMAL_FACTOR);
-        out_color_f128.b = (in_color_u32.b * COLOR_NORMAL_FACTOR);
-        out_color_f128.a = (in_color_u32.a * COLOR_NORMAL_FACTOR);
+        out_color_f128->r = (in_color_u32->r * COLOR_NORMAL_FACTOR);
+        out_color_f128->g = (in_color_u32->g * COLOR_NORMAL_FACTOR);
+        out_color_f128->b = (in_color_u32->b * COLOR_NORMAL_FACTOR);
+        out_color_f128->a = (in_color_u32->a * COLOR_NORMAL_FACTOR);
     }
     
     SLD_INLINE void 
     color_f128_denormalize(
-        const color_f128_t& in_color_f128,
-        color_u32_t&       out_color_u32) {
+        const color_f128_t* in_color_f128,
+        color_u32_t*       out_color_u32) {
 
         constexpr f32 factor = (f32)COLOR_CHANNEL_MAX_VALUE;
-        out_color_u32.r = (in_color_f128.r * factor);
-        out_color_u32.g = (in_color_f128.g * factor);
-        out_color_u32.b = (in_color_f128.b * factor);
-        out_color_u32.a = (in_color_f128.a * factor);
+        out_color_u32->r = (in_color_f128->r * factor);
+        out_color_u32->g = (in_color_f128->g * factor);
+        out_color_u32->b = (in_color_f128->b * factor);
+        out_color_u32->a = (in_color_f128->a * factor);
     }
 };
 

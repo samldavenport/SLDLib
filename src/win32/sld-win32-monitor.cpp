@@ -47,7 +47,7 @@ namespace sld {
 
             // copy the win32 info to our structure
             os_monitor_info_t& monitor_info = enumerator->monitor_info[enumerator->index];            
-            monitor_info.handle.val   = (void*)h_monitor;
+            monitor_info.os_handle    = h_monitor;
             monitor_info.index        = enumerator->index;
             monitor_info.pixel_width  = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
             monitor_info.pixel_height = (win32_monitor_info.rcMonitor.bottom - win32_monitor_info.rcMonitor.top); 
@@ -55,7 +55,7 @@ namespace sld {
             monitor_info.position_y   = win32_monitor_info.rcMonitor.top;
             
             sld_monitor_name.chars = monitor_info.name_cstr;
-            (void)cstr_copy_from(&sld_monitor_name, win32_monitor_info.szDevice, name_size);
+            (void)cstr_copy_from(&sld_monitor_name, (cchar*)win32_monitor_info.szDevice, name_size);
 
             // update the index
             ++enumerator->index;
@@ -100,18 +100,17 @@ namespace sld {
 
     }
 
-    static os_monitor_handle_t
+    static os_monitor_t
     win32_monitor_primary(
         void) {
 
-        POINT    origin  = { 0, 0 };
-        HMONITOR primary = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
-
-        os_monitor_handle_t os_handle = { primary };
-        return(os_handle);
+        POINT        origin    = { 0, 0 };
+        HMONITOR     h_monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
+        os_monitor_t monitor   = { h_monitor };
+        return(monitor);
     }
 
-    static os_monitor_handle_t
+    static os_monitor_t
     win32_monitor_from_point(
         const u32 x,
         const u32 y) {
@@ -119,9 +118,9 @@ namespace sld {
         LONG     long_x  = *(LONG*)&x;
         LONG     long_y  = *(LONG*)&y;
         POINT    point   = { long_x, long_y };
-        HMONITOR monitor = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
+        HMONITOR h_monitor = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
 
-        os_monitor_handle_t os_handle = { monitor };
-        return(os_handle);
+        os_monitor_t monitor = { h_monitor };
+        return(monitor);
     }
 };
