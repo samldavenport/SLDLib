@@ -11,6 +11,12 @@
 namespace sld {
 
     //-------------------------------------------------------------------
+    // GLOBALS
+    //-------------------------------------------------------------------
+
+    SLD_GLOBAL os_file_error_t _file_last_error;
+
+    //-------------------------------------------------------------------
     // DECLARATIONS
     //-------------------------------------------------------------------
 
@@ -24,7 +30,8 @@ namespace sld {
     };
 
     // internal methods
-    os_file_error_t win32_file_get_last_error         (void);
+    void            win32_file_set_last_error         (void);
+    void            win32_file_clear_last_error       (void);
     const u64       win32_file_get_buffer_granularity (void);
     LPOVERLAPPED    win32_file_get_overlapped         (os_file_async_t* async);
 
@@ -34,7 +41,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_open(
-        os_file_t*              file,
+        os_file_handle_t*       file,
         const os_file_config_t* config,
         const cchar*            path) {
 
@@ -45,7 +52,7 @@ namespace sld {
             path   != NULL
         );
         assert(can_open);
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         win32_file_args_t file_args = {0};
         file_args.access          = 0;
@@ -81,7 +88,7 @@ namespace sld {
         }
 
         // create file
-        file->handle = CreateFile(
+        file->val = CreateFile(
             path,
             file_args.access,
             file_args.share,
@@ -91,51 +98,51 @@ namespace sld {
             file_args.template_handle
         );
 
-        const bool did_create = (file->handle != INVALID_HANDLE_VALUE);
+        const bool did_create = (file->val != INVALID_HANDLE_VALUE);
         if (!did_create) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
         }        
         return(did_create);
     }
 
     SLD_API_OS_FUNC bool
     win32_file_close(
-        os_file_t* file) {
+        os_file_handle_t* file) {
 
         assert(file);
 
-        file->error.val = (os_file_error_e_success);
+        win32_file_clear_last_error();
 
-        const bool did_close = (bool)CloseHandle(file->handle);
+        const bool did_close = (bool)CloseHandle(file->val);
         if (!did_close) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
         }
 
-        file->handle = INVALID_HANDLE_VALUE;
+        file->val = INVALID_HANDLE_VALUE;
         return(did_close);
     }
 
     SLD_API_OS_FUNC u64
     win32_file_get_size(
-        os_file_t* file) {
+        os_file_handle_t* file) {
 
         assert(file);
 
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         LARGE_INTEGER size;
-        const bool did_get_size = (bool)GetFileSizeEx(file->handle, &size);
+        const bool did_get_size = (bool)GetFileSizeEx(file->val, &size);
 
         if (!did_get_size) {
             size.QuadPart = OS_FILE_SIZE_INVALID;
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
         }
         return(size.QuadPart);
     }
 
     SLD_API_OS_FUNC u64 
     win32_file_read(
-        os_file_t*        file,
+        os_file_handle_t* file,
         os_file_buffer_t* buffer) {
 
         // check args and clear error
@@ -145,11 +152,11 @@ namespace sld {
             buffer->data   != NULL &&
             buffer->offset <  buffer->size
         );
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         // set the pointer
         PLARGE_INTEGER file_pointer_new              = NULL;
-        HANDLE         file_handle                   = file->handle;
+        HANDLE         file_handle                   = file->val;
         DWORD          file_pointer_move_method      = FILE_BEGIN;
         LARGE_INTEGER  file_pointer_distance_to_move;
         file_pointer_distance_to_move.QuadPart = buffer->cursor;
@@ -161,7 +168,7 @@ namespace sld {
             file_pointer_move_method
         );
         if (!did_set_pointer) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(OS_FILE_SIZE_INVALID);
         }
 
@@ -181,7 +188,7 @@ namespace sld {
 
         // return the bytes read
         if (!did_read) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             file_read_size_actual = OS_FILE_SIZE_INVALID;
         }
         return(file_read_size_actual);
@@ -189,7 +196,7 @@ namespace sld {
 
     SLD_API_OS_FUNC u64 
     win32_file_write(
-        os_file_t*        file,
+        os_file_handle_t* file,
         os_file_buffer_t* buffer) {
 
         // check args and clear error
@@ -199,11 +206,11 @@ namespace sld {
             buffer->data   != NULL &&
             buffer->offset <  buffer->size
         );
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         // set the pointer
         PLARGE_INTEGER file_pointer_new              = NULL;
-        HANDLE         file_handle                   = file->handle;
+        HANDLE         file_handle                   = file->val;
         DWORD          file_pointer_move_method      = FILE_BEGIN;
         LARGE_INTEGER  file_pointer_distance_to_move;
         file_pointer_distance_to_move.QuadPart       = buffer->cursor;
@@ -215,7 +222,7 @@ namespace sld {
             file_pointer_move_method
         );
         if (!did_set_pointer) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(OS_FILE_SIZE_INVALID);
         }
 
@@ -235,7 +242,7 @@ namespace sld {
 
         // return the bytes read
         if (!did_write) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             file_write_size_actual = OS_FILE_SIZE_INVALID;
         }
         return(file_write_size_actual);
@@ -247,11 +254,11 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_create(
-        os_file_t*       file,
-        os_file_async_t* async) {
+        os_file_handle_t* file,
+        os_file_async_t*  async) {
 
         assert(file != NULL && async != NULL);
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         async->timeout_ms = 0;
 
@@ -272,7 +279,7 @@ namespace sld {
         
         const bool did_create = (overlapped->hEvent != NULL);
         if (!did_create) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
         }
 
         return(did_create);
@@ -280,18 +287,18 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_destroy(
-        os_file_t*       file,
-        os_file_async_t* async) {
+        os_file_handle_t* file,
+        os_file_async_t*  async) {
 
         assert(file != NULL && async != NULL);
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         LPOVERLAPPED overlapped = win32_file_get_overlapped(async);    
         ZeroMemory(overlapped, sizeof(OVERLAPPED));
 
         const bool did_destroy = (bool)CloseHandle(overlapped->hEvent);
         if (!did_destroy) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
         }
 
         return(did_destroy);
@@ -299,7 +306,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_read(
-        os_file_t*        file,
+        os_file_handle_t* file,
         os_file_async_t*  async,
         os_file_buffer_t* buffer) {
 
@@ -309,9 +316,9 @@ namespace sld {
             buffer         != NULL &&            
             buffer->offset <  buffer->size
         );
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
-        HANDLE       read_handle            = (HANDLE)file->handle; 
+        HANDLE       read_handle            = (HANDLE)file->val; 
         LPOVERLAPPED read_overlapped        = win32_file_get_overlapped(async);
         LPDWORD      read_bytes_transferred = NULL; // null because overlapped is tracking io
         LPVOID       read_data              = (LPVOID)(((addr)buffer->data) + buffer->offset);
@@ -327,14 +334,14 @@ namespace sld {
         );
 
         if (!did_read) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
         }
         return(did_read);
     }
     
     SLD_API_OS_FUNC bool
     win32_file_async_write(
-        os_file_t*        file,
+        os_file_handle_t* file,
         os_file_async_t*  async,
         os_file_buffer_t* buffer) {
 
@@ -344,9 +351,9 @@ namespace sld {
             buffer         != NULL &&            
             buffer->offset <  buffer->size
         );
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
-        HANDLE       write_handle            = (HANDLE)file->handle; 
+        HANDLE       write_handle            = (HANDLE)file->val; 
         LPOVERLAPPED write_overlapped        = win32_file_get_overlapped(async);
         LPDWORD      write_bytes_transferred = NULL; // null because overlapped is tracking io
         LPVOID       write_data              = (LPVOID)(((addr)buffer->data) + buffer->offset);
@@ -364,8 +371,8 @@ namespace sld {
         async->state.val = os_file_async_state_e_success;
         if (!did_read) {
 
-            file->error = win32_file_get_last_error();
-            async->state.val = (file->error.val == os_file_error_e_io_pending)
+            win32_file_set_last_error();
+            async->state.val = (_file_last_error.val == os_file_error_e_io_pending)
                 ? os_file_async_state_e_pending  
                 : os_file_async_state_e_error;
         }
@@ -374,14 +381,14 @@ namespace sld {
 
     SLD_API_OS_FUNC u64
     win32_file_async_get_result(
-        os_file_t*       file,
-        os_file_async_t* async) {
+        os_file_handle_t* file,
+        os_file_async_t*  async) {
 
         assert(file != NULL && async != NULL);
 
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
-        HANDLE       overlapped_file_handle       = file->handle; 
+        HANDLE       overlapped_file_handle       = file->val; 
         LPOVERLAPPED overlapped                   = win32_file_get_overlapped(async);
         DWORD        overlapped_bytes_transferred = 0;
         BOOL         overlapped_wait              = FALSE;
@@ -393,8 +400,8 @@ namespace sld {
         );
 
         if (!overlapped_result) {
-            file->error = win32_file_get_last_error();
-            async->state.val = (file->error.val == os_file_error_e_io_pending)
+            win32_file_set_last_error();
+            async->state.val = (_file_last_error.val == os_file_error_e_io_pending)
                 ? os_file_async_state_e_pending  
                 : os_file_async_state_e_error;
             overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
@@ -404,12 +411,12 @@ namespace sld {
 
     SLD_API_OS_FUNC u64
     win32_file_async_wait(
-        os_file_t*       file,
-        os_file_async_t* async) {
+        os_file_handle_t* file,
+        os_file_async_t*  async) {
 
         assert(file != NULL && async != NULL);
 
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         LPOVERLAPPED overlapped                   = win32_file_get_overlapped(async);
         DWORD        overlapped_bytes_transferred = 0;
@@ -425,7 +432,7 @@ namespace sld {
 
             // io complete
             case (WAIT_OBJECT_0): {
-                HANDLE       overlapped_file_handle = file->handle; 
+                HANDLE       overlapped_file_handle = file->val; 
                 LPOVERLAPPED overlapped             = win32_file_get_overlapped(async);
                 BOOL         overlapped_wait        = FALSE;
                 BOOL         overlapped_result      = GetOverlappedResult(
@@ -437,7 +444,7 @@ namespace sld {
                 async->state.val = os_file_async_state_e_success;
 
                 if (!overlapped_result) {
-                    file->error = win32_file_get_last_error();
+                    win32_file_set_last_error();
                     overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
                     async->state.val = os_file_async_state_e_error;
                 }
@@ -445,14 +452,14 @@ namespace sld {
 
             // io timeout
             case (WAIT_TIMEOUT): {
-                file->error = win32_file_get_last_error();
+                win32_file_set_last_error();
                 overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
                 async->state.val             = os_file_async_state_e_timeout;
             } break;
 
             // io error
             default: {
-                file->error = win32_file_get_last_error();
+                win32_file_set_last_error();
                 overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
                 async->state.val             = os_file_async_state_e_error;
             } break;
@@ -463,14 +470,14 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_cancel(
-        os_file_t*       file,
-        os_file_async_t* async) {
+        os_file_handle_t* file,
+        os_file_async_t*  async) {
 
         assert(file != NULL && async != NULL);
 
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
-        HANDLE       overlapped_file_handle = file->handle;
+        HANDLE       overlapped_file_handle = file->val;
         LPOVERLAPPED overlapped             = win32_file_get_overlapped(async);
         bool         did_cancel             = (bool)CancelIoEx(
             overlapped_file_handle,
@@ -479,7 +486,7 @@ namespace sld {
 
         async->state.val = os_file_async_state_e_success;
         if (!did_cancel) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             async->state.val = os_file_async_state_e_error;
         }
         return(did_cancel);
@@ -491,17 +498,18 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_create(
-        os_file_t*               file,
-        os_file_mapped_buffer_t* mapped_buffer) {
+        os_file_handle_t*               file_hnd,
+        os_file_map_handle_t*           map_hnd,
+        os_file_buffer_t*               buffer) {
 
-        assert(file != NULL && mapped_buffer != NULL);
-        file->error.val = os_file_error_e_success;
+        assert(file_hnd != NULL && map_hnd != NULL && buffer != NULL);
+        win32_file_clear_last_error();
 
         // get the file size
-        HANDLE        file_handle = (HANDLE)file->handle;
+        HANDLE        file_handle = (HANDLE)file_hnd->val;
         LARGE_INTEGER file_size   = {0};
-        if (!GetFileSizeEx(file->handle, &file_size)) {
-            file->error = win32_file_get_last_error();
+        if (!GetFileSizeEx(file_handle, &file_size)) {
+            win32_file_set_last_error();
             return(false);
         }
 
@@ -534,8 +542,8 @@ namespace sld {
             file_map_max_size_low,
             file_map_name
         );
-        if (!file_map_handle) {
-            file->error = win32_file_get_last_error();
+        if (!map_hnd->val) {
+            win32_file_set_last_error();
             return(false);
         } 
 
@@ -553,88 +561,95 @@ namespace sld {
         );
 
         if (!file_data) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             assert(CloseHandle(file_map_handle));
             return(false);
         }
 
-        // set the buffer properties
-        mapped_buffer->handle = file_map_handle;
-        mapped_buffer->data      = (byte*)file_data;
-        mapped_buffer->size      = file_map_size;
-        mapped_buffer->offset    = 0;
-        mapped_buffer->cursor    = 0;
+        // set properties 
+        map_hnd->val      = file_map_handle;
+
+        buffer->data      = (byte*)file_data;
+        buffer->size      = file_map_size;
+        buffer->offset    = 0;
+        buffer->cursor    = 0;
+        
+        return(true);
     }
 
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_destroy(
-        os_file_t*               file,
-        os_file_mapped_buffer_t* mapped_buffer) {
+        os_file_handle_t*     file_hnd,
+        os_file_map_handle_t* map_hnd,
+        os_file_buffer_t*     buffer) {
 
-        assert(file != NULL && mapped_buffer != NULL);
+        assert(file_hnd != NULL && map_hnd != NULL && buffer != NULL);
 
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
 
         // unmap the buffer
-        const bool is_unmapped = (bool)UnmapViewOfFile(mapped_buffer->data);
+        const bool is_unmapped = (bool)UnmapViewOfFile(buffer->data);
         if (!is_unmapped) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(is_unmapped);
         }
-        mapped_buffer->data = NULL;
+        buffer->data = NULL;
 
         // close the map
-        const bool is_closed = (bool)CloseHandle(mapped_buffer->handle);
+        const bool is_closed = (bool)CloseHandle(map_hnd->val);
         if (!is_closed) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(is_closed);
         }
-        mapped_buffer->handle = NULL;
-        mapped_buffer->size      = 0;
-        mapped_buffer->offset    = 0;
-        mapped_buffer->cursor    = 0;
+        map_hnd->val = NULL;
+        
+        buffer->size      = 0;
+        buffer->offset    = 0;
+        buffer->cursor    = 0;
         return(is_unmapped);
     }
 
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_read(
-        os_file_t*               file,
-        os_file_mapped_buffer_t* mapped_buffer) {
+        os_file_handle_t*     file_hnd,
+        os_file_map_handle_t* map_hnd,
+        os_file_buffer_t*     buffer) {
 
         assert(
-            file          != NULL &&
-            mapped_buffer != NULL
+            file_hnd != NULL &&
+            map_hnd  != NULL &&
+            buffer   != NULL
         );
-        file->error.val = os_file_error_e_success;
+        win32_file_clear_last_error();
         
         // get the current file size
-        HANDLE        file_handle = file->handle;
+        HANDLE        file_handle = file_hnd->val;
         LARGE_INTEGER file_size   = {0};
         if (!GetFileSizeEx(file_handle, &file_size)) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(false);
         }
 
         // check to see if we need to remap
         const bool need_remap = (
-            file_size.QuadPart    != mapped_buffer->size   &&
-            file_size.QuadPart    <  mapped_buffer->cursor &&
-            mapped_buffer->cursor >  mapped_buffer->size
+            file_size.QuadPart != buffer->size   &&
+            file_size.QuadPart <  buffer->cursor &&
+            buffer->cursor     >  buffer->size
         );
         if (need_remap) {
 
             // unmap the buffer
-            const bool is_unmapped = (bool)UnmapViewOfFile(mapped_buffer->data);
+            const bool is_unmapped = (bool)UnmapViewOfFile(buffer->data);
             if (!is_unmapped) {
-                file->error = win32_file_get_last_error();
+                win32_file_set_last_error();
                 return(is_unmapped);
             }
-            mapped_buffer->data = NULL;
+            buffer->data = NULL;
 
             // close the map
-            const bool is_closed = (bool)CloseHandle(mapped_buffer->handle);
+            const bool is_closed = (bool)CloseHandle(map_hnd->val);
             if (!is_closed) {
-                file->error = win32_file_get_last_error();
+                win32_file_set_last_error();
                 return(is_closed);
             }
 
@@ -668,13 +683,13 @@ namespace sld {
                 file_map_name
             );
             if (!file_map_handle) {
-                file->error = win32_file_get_last_error();
+                win32_file_set_last_error();
                 return(false);
             } 
         }
         
         // map the file to the buffer
-        HANDLE             file_map_handle  = mapped_buffer->handle;
+        HANDLE             file_map_handle  = map_hnd->val;
         static const DWORD file_data_access = FILE_MAP_ALL_ACCESS;
         static const DWORD file_offset_high = 0;
         static const DWORD file_offset_low  = 0;
@@ -688,42 +703,46 @@ namespace sld {
         );
 
         if (!file_data) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             assert(CloseHandle(file_map_handle));
             return(false);
         }
 
-        // set the buffer properties
-        mapped_buffer->handle = file_map_handle;
-        mapped_buffer->data      = (byte*)file_data;
-        mapped_buffer->size      = file_map_size;
-        mapped_buffer->offset    = 0;
-        mapped_buffer->cursor    = 0;
+        // set the properties
+        map_hnd->val   = file_map_handle;
+        buffer->data   = (byte*)file_data;
+        buffer->size   = file_map_size;
+        buffer->offset = 0;
+        buffer->cursor = 0;
         return(true);
     }
-
     
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_write(
-        os_file_t*               file,
-        os_file_mapped_buffer_t* mapped_buffer) {
+        os_file_handle_t*     file_hnd,
+        os_file_map_handle_t* map_hnd,
+        os_file_buffer_t*     buffer) {
 
-        assert(file != NULL && mapped_buffer != NULL);
-        file->error.val = os_file_error_e_success;
+        assert(
+            file_hnd != NULL &&
+            map_hnd  != NULL &&
+            buffer   != NULL
+        );
+        win32_file_clear_last_error();
 
         // flush the view of the file
         const bool did_flush_view = (bool)FlushViewOfFile(
-            (LPVOID)mapped_buffer->data,
-            mapped_buffer->size);
+            (LPVOID)buffer->data,
+            buffer->size);
         if (!did_flush_view) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(did_flush_view);
         }
 
         // flush the file buffers
-        const bool did_flush_buffers = (bool)FlushFileBuffers(file->handle);
+        const bool did_flush_buffers = (bool)FlushFileBuffers(file_hnd->val);
         if (!did_flush_buffers) {
-            file->error = win32_file_get_last_error();
+            win32_file_set_last_error();
             return(did_flush_buffers);
         }
 
@@ -734,42 +753,47 @@ namespace sld {
     // INTERNAL
     //-------------------------------------------------------------------
 
-    SLD_API_OS_INTERNAL os_file_error_t
-    win32_file_get_last_error(
+    SLD_API_OS_INTERNAL void
+    win32_file_set_last_error(
         void) {
 
         const DWORD win32_error = GetLastError();
-        os_file_error_t sld_error;
 
         switch (win32_error) {
-            case (ERROR_SUCCESS):              { sld_error.val = os_file_error_e_success;             }
-            case (ERROR_INVALID_PARAMETER):    { sld_error.val = os_file_error_e_invalid_args;        }
-            case (ERROR_INVALID_HANDLE):       { sld_error.val = os_file_error_e_invalid_handle;      }
-            case (ERROR_SECTOR_NOT_FOUND):     { sld_error.val = os_file_error_e_invalid_disk;        }
-            case (ERROR_DEVICE_NOT_CONNECTED): { sld_error.val = os_file_error_e_invalid_device;      }
-            case (ERROR_INVALID_USER_BUFFER):  { sld_error.val = os_file_error_e_invalid_buffer;      }
-            case (ERROR_FILE_INVALID):         { sld_error.val = os_file_error_e_invalid_file;        }
-            case (ERROR_SHARING_VIOLATION):    { sld_error.val = os_file_error_e_sharing_violation;   }
-            case (ERROR_ALREADY_EXISTS):       { sld_error.val = os_file_error_e_already_exists;      }
-            case (ERROR_FILE_EXISTS):          { sld_error.val = os_file_error_e_already_exists;      }
-            case (ERROR_FILE_NOT_FOUND):       { sld_error.val = os_file_error_e_not_found;           }
-            case (ERROR_ACCESS_DENIED):        { sld_error.val = os_file_error_e_access_denied;       }
-            case (ERROR_PIPE_BUSY):            { sld_error.val = os_file_error_e_pipe_busy;           }
-            case (ERROR_HANDLE_EOF):           { sld_error.val = os_file_error_e_reached_end_of_file; }
-            case (ERROR_BROKEN_PIPE):          { sld_error.val = os_file_error_e_broken_pipe;         }
-            case (ERROR_NO_DATA):              { sld_error.val = os_file_error_e_no_data;             }
-            case (ERROR_MORE_DATA):            { sld_error.val = os_file_error_e_more_data;           }
-            case (ERROR_IO_INCOMPLETE):        { sld_error.val = os_file_error_e_io_incomplete;       }
-            case (ERROR_IO_PENDING):           { sld_error.val = os_file_error_e_io_pending;          }
-            case (ERROR_OPERATION_ABORTED):    { sld_error.val = os_file_error_e_operation_aborted;   }
-            case (ERROR_CRC):                  { sld_error.val = os_file_error_e_disk_io_failure;     }
-            case (ERROR_DISK_CORRUPT):         { sld_error.val = os_file_error_e_disk_corrupt;        }
-            case (ERROR_NOT_READY):            { sld_error.val = os_file_error_e_device_not_ready;    }
-            case (ERROR_GEN_FAILURE):          { sld_error.val = os_file_error_e_device_failure;      }
-            case (ERROR_NOT_ENOUGH_MEMORY):    { sld_error.val = os_file_error_e_out_of_memory;       }
-            default:                           { sld_error.val = os_file_error_e_unknown;             }
+            case (ERROR_SUCCESS):              { _file_last_error.val = os_file_error_e_success;             }
+            case (ERROR_INVALID_PARAMETER):    { _file_last_error.val = os_file_error_e_invalid_args;        }
+            case (ERROR_INVALID_HANDLE):       { _file_last_error.val = os_file_error_e_invalid_handle;      }
+            case (ERROR_SECTOR_NOT_FOUND):     { _file_last_error.val = os_file_error_e_invalid_disk;        }
+            case (ERROR_DEVICE_NOT_CONNECTED): { _file_last_error.val = os_file_error_e_invalid_device;      }
+            case (ERROR_INVALID_USER_BUFFER):  { _file_last_error.val = os_file_error_e_invalid_buffer;      }
+            case (ERROR_FILE_INVALID):         { _file_last_error.val = os_file_error_e_invalid_file;        }
+            case (ERROR_SHARING_VIOLATION):    { _file_last_error.val = os_file_error_e_sharing_violation;   }
+            case (ERROR_ALREADY_EXISTS):       { _file_last_error.val = os_file_error_e_already_exists;      }
+            case (ERROR_FILE_EXISTS):          { _file_last_error.val = os_file_error_e_already_exists;      }
+            case (ERROR_FILE_NOT_FOUND):       { _file_last_error.val = os_file_error_e_not_found;           }
+            case (ERROR_ACCESS_DENIED):        { _file_last_error.val = os_file_error_e_access_denied;       }
+            case (ERROR_PIPE_BUSY):            { _file_last_error.val = os_file_error_e_pipe_busy;           }
+            case (ERROR_HANDLE_EOF):           { _file_last_error.val = os_file_error_e_reached_end_of_file; }
+            case (ERROR_BROKEN_PIPE):          { _file_last_error.val = os_file_error_e_broken_pipe;         }
+            case (ERROR_NO_DATA):              { _file_last_error.val = os_file_error_e_no_data;             }
+            case (ERROR_MORE_DATA):            { _file_last_error.val = os_file_error_e_more_data;           }
+            case (ERROR_IO_INCOMPLETE):        { _file_last_error.val = os_file_error_e_io_incomplete;       }
+            case (ERROR_IO_PENDING):           { _file_last_error.val = os_file_error_e_io_pending;          }
+            case (ERROR_OPERATION_ABORTED):    { _file_last_error.val = os_file_error_e_operation_aborted;   }
+            case (ERROR_CRC):                  { _file_last_error.val = os_file_error_e_disk_io_failure;     }
+            case (ERROR_DISK_CORRUPT):         { _file_last_error.val = os_file_error_e_disk_corrupt;        }
+            case (ERROR_NOT_READY):            { _file_last_error.val = os_file_error_e_device_not_ready;    }
+            case (ERROR_GEN_FAILURE):          { _file_last_error.val = os_file_error_e_device_failure;      }
+            case (ERROR_NOT_ENOUGH_MEMORY):    { _file_last_error.val = os_file_error_e_out_of_memory;       }
+            default:                           { _file_last_error.val = os_file_error_e_unknown;             }
         }
-        return(sld_error);
+    }
+
+    SLD_API_OS_INTERNAL void
+    win32_file_clear_last_error(
+        void) {
+        
+        _file_last_error.val = os_file_error_e_success;
     }
 
     SLD_API_OS_INTERNAL const u64

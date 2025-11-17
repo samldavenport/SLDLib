@@ -8,46 +8,65 @@
 
 namespace sld {
 
-    using  os_window_error_s32       = s32;
-    using  os_window_event_flags_u32 = u32; 
-    using  os_window_size_t          = dims_u32_size_t;
-    using  os_window_pos_t           = dims_u32_pos_t;
-    using  os_window_color_t         = color_u32_t;
-    
-    struct os_window_t;
+    //-------------------------------------------------------------------
+    // DECLARATIONS
+    //-------------------------------------------------------------------
+
+    struct os_window_handle_t;
+    struct os_window_error_t;
+    struct os_window_size_t;
+    struct os_window_pos_t;
+    struct os_window_color_t;
+    struct os_window_event_flags_t;
+    struct os_window_handle_t;
     struct os_window_update_t;
     struct os_window_dialog_t;
 
-    using os_window_create_f             = bool (*) (os_window_t* window, const cchar* title, const os_window_size_t* size, const os_window_pos_t* position);
-    using os_window_set_viewport_f       = bool (*) (os_window_t* window, const os_window_size_t* size, const os_window_pos_t* position); 
-    using os_window_update_f             = bool (*) (os_window_t* window, os_window_update_t*           update);
-    using os_window_get_size_f           = bool (*) (os_window_t* window, os_window_size_t*             size);
-    using os_window_get_position_f       = bool (*) (os_window_t* window, os_window_pos_t*              position);
-    using os_window_set_clear_color_f    = bool (*) (os_window_t* window, const os_window_color_t*      color);
-    using os_window_open_file_dialog_f   = bool (*) (os_window_t* window, os_window_dialog_t* dialog);
-    using os_window_save_file_dialog_f   = bool (*) (os_window_t* window, os_window_dialog_t* dialog);
-    using os_window_destroy_f            = bool (*) (os_window_t* window);
-    using os_window_swap_buffers_f       = bool (*) (os_window_t* window);
-    using os_window_show_f               = bool (*) (os_window_t* window);
+    //-------------------------------------------------------------------
+    // API
+    //-------------------------------------------------------------------
 
-    struct os_window_t {
-        vptr                os_handle;
-        os_window_error_s32 error;
-    };
+    using os_window_get_last_error_f     = os_window_error_t (*) (void);
+    using os_window_create_f             = bool (*) (os_window_handle_t* window_hnd, const cchar* title, const os_window_size_t* size, const os_window_pos_t* position);
+    using os_window_set_viewport_f       = bool (*) (os_window_handle_t* window_hnd, const os_window_size_t*  size, const os_window_pos_t* position); 
+    using os_window_update_f             = bool (*) (os_window_handle_t* window_hnd, os_window_update_t*      update);
+    using os_window_get_size_f           = bool (*) (os_window_handle_t* window_hnd, os_window_size_t*        size);
+    using os_window_get_position_f       = bool (*) (os_window_handle_t* window_hnd, os_window_pos_t*         position);
+    using os_window_set_clear_color_f    = bool (*) (os_window_handle_t* window_hnd, const os_window_color_t* color);
+    using os_window_open_file_dialog_f   = bool (*) (os_window_handle_t* window_hnd, os_window_dialog_t* dialog);
+    using os_window_save_file_dialog_f   = bool (*) (os_window_handle_t* window_hnd, os_window_dialog_t* dialog);
+    using os_window_destroy_f            = bool (*) (os_window_handle_t* window_hnd);
+    using os_window_swap_buffers_f       = bool (*) (os_window_handle_t* window_hnd);
+    using os_window_show_f               = bool (*) (os_window_handle_t* window_hnd);
+
+    //-------------------------------------------------------------------
+    // DEFINITIONS
+    //-------------------------------------------------------------------
+
+    struct os_window_handle_t      : vptr_t          { };
+    struct os_window_error_t       : s32_t           { };
+    struct os_window_size_t        : dims_u32_size_t { };
+    struct os_window_pos_t         : dims_u32_pos_t  { };
+    struct os_window_color_t       : color_u32_t     { };
+    struct os_window_event_flags_t : u32_t           { };
 
     struct os_window_update_t {
         input_keyboard_t*       keyboard;
-        os_window_event_flags_u32 events;
+        os_window_event_flags_t events;
     };
 
     struct os_window_dialog_t {
-        const cchar* filter;
-        const cchar* start;
-        const cchar* title;
-        cchar*       selection_buffer_cstr;
-        u64          selection_buffer_size;
-        bool         did_select;
+        cchar* filter;
+        cchar* start;
+        cchar* title;
+        cchar* selection_buffer_cstr;
+        u64    selection_buffer_size;
+        bool   did_select;
     };
+
+    //-------------------------------------------------------------------
+    // ENUMS
+    //-------------------------------------------------------------------
 
     enum os_window_event_flag_e {
         os_window_event_e_none                  = 0,
