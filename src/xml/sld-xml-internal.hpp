@@ -24,7 +24,7 @@ namespace sld {
     SLD_INTERNAL xml_attrib_t*      xml_doc_push_attrib             (xml_doc_t* xml_doc);
 
     struct xml_doc_t : pugi::xml_document {
-        stack_t* stack; 
+        stack_t stack; 
     };     
     
     struct xml_node_t : pugi::xml_node { 
