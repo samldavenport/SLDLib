@@ -141,7 +141,7 @@ namespace sld {
     xml_doc_push_node(
         xml_doc_t* xml_doc) {
 
-        auto node = stack_push_struct<xml_node_t>(xml_doc->stack);
+        auto node = (xml_node_t*)stack_push(&xml_doc->stack, sizeof(xml_node_t));
         assert(node);
         return(node);
     }
@@ -150,7 +150,7 @@ namespace sld {
     xml_doc_push_attrib(
         xml_doc_t* xml_doc) {
 
-        auto attrib = stack_push_struct<xml_attrib_t>(xml_doc->stack);
+        auto attrib = (xml_attrib_t*)stack_push(&xml_doc->stack, sizeof(xml_attrib_t));
         assert(attrib);
         return(attrib);
     }
