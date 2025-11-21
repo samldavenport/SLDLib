@@ -4,6 +4,7 @@
 #include "sld-arena.hpp"
 #include "sld-block-allocator.hpp"
 #include "sld-arena-allocator.hpp"
+#include "sld-array-list.hpp"
 
 #include "sld-hash32.cpp"
 #include "sld-hash128.cpp"

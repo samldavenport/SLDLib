@@ -3,223 +3,307 @@
 
 #include "sld.hpp"
 
+#define SLD_API_INLINE_ARRAY_LIST template<typename _t> inline auto array_list_t<_t>::
+
 namespace sld {
 
     //-------------------------------------------------------------------
     // ARRAY LIST
     //-------------------------------------------------------------------
 
-    constexpr u32 ARRAY_LIST_INDEX_INVALID = 0xFFFFFFFF;
 
-    template<typename t>
+    template<typename _t> 
     struct array_list_t {
 
-        t*   start;
-        u32  capacity;
-        u32  count;
+        // type alias
+        using element_t = _t;
 
-        inline static array_list_t<t>* init_from_memory     (const void* memory, const u32 size);
-        inline bool                    init_from_array      (t* const    array,  const u32 count);
-        inline u32                     get_index_of_element (const t*    element);
-        inline bool                    add_element          (const t*    element);
-        inline bool                    insert_element_at    (const t*    element, const u32 index);
-        inline bool                    remove_element_at    (const u32   index);
-        inline constexpr void          assert_valid         (void);
-        inline constexpr bool          is_valid             (void);
-        inline constexpr bool          is_empty             (void); 
-        inline constexpr bool          is_full              (void);
-        inline constexpr bool          is_not_full          (void);
-        inline constexpr u32           get_size_of_element  (void);
-        inline constexpr t*            get_first_element    (void);
-        inline constexpr t*            get_last_element     (void);
-        inline constexpr t*            get_element_at       (const u32 index);
-        inline constexpr t*            get_next_element     (const t*  current);
+        // members
+        element_t* array;
+        u32        capacity;
+        u32        count;
 
-        inline t&       operator[] (u32 index);
-        inline const t& operator[] (u32 index) const;
+        // methods
+        inline void       init         (element_t* data, const u64 capacity);
+        inline bool       is_valid     (void) const;
+        inline bool       is_empty     (void) const;
+        inline bool       is_full      (void) const;
+        inline void       assert_valid (void) const;
+        inline element_t& first        (void) const;
+        inline element_t& last         (void) const;
+        inline void       reset        (void);
+        inline bool       add          (const element_t* elment);
+        inline bool       add          (const element_t& elment);
+        inline bool       insert_at    (const element_t* elment, const u32 index);
+        inline bool       insert_at    (const element_t& elment, const u32 index);
+        inline void       remove       (const element_t* element);
+        inline void       remove       (const element_t& element);
+        inline void       remove_at    (const u32  index);
+
+        // operators
+        inline element_t&       operator[] (u32 index);
+        inline const element_t& operator[] (u32 index) const;
     };
 
     //-------------------------------------------------------------------
     // INLINE METHODS
     //-------------------------------------------------------------------
+    
+    SLD_API_INLINE_ARRAY_LIST
+    init(
+        element_t*  array,
+        const u64 capacity) -> void {
 
-    template<typename t>
-    inline array_list_t<t>* 
-    array_list_init_from_memory(
-        const void* memory,
-        const u32   size) {
+        assert(
+            array    != NULL &&
+            capacity != 0
+        );
 
-        array_list_t<t>* array_list = (array_list_t<t>*)memory;
-        if (array_list) {
-
-            constexpr u32 struct_size    = sizeof(array_list_t<t>);
-            const u32     stride_aligned = sizeof(t); 
-            const u32     data_size      = (size - struct_size); 
-
-            array_list->start    = (addr)memory + struct_size; 
-            array_list->capacity = data_size / stride_aligned;
-            array_list->count    = 0;
-        }
-        array_list->assert_valid();
-        return(array_list);
+        this->array    = array;
+        this->capacity = capacity;
+        this->count    = 0;
     }
 
-    SLD_ARRAY_LIST_IMPL_INLINE
-    init_from_array(
-        t* const  array,
-        const u32 count) -> bool {
-
-        bool can_init = true;
-        can_init &= (array_list != NULL);
-        can_init &= (array      != NULL);
-        can_init &= (count      != 0);
-
-        array_list->start    = array;
-        array_list->capacity = count;
-        array_list->count    = 0;
-        array_list_assert_valid(array_list);
-    }
-
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
-    assert_valid(
-        void) -> void {
-        assert(is_valid(array_list));
-    }
-
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
+    SLD_API_INLINE_ARRAY_LIST
     is_valid(
-        void) -> bool {
+        void) const -> bool {
 
-        bool is_valid &=  (start    != nullptr);
-        is_valid      &&= (capacity != 0);
-        is_valid      &&= (count    <= capacity);
-        return(is_valid)
+        const bool is_valid = (
+            (this->array    != NULL)    &&
+            (this->capacity != 0)       &&
+            (this->count    <= this->capacity)
+        );
+        return(is_valid);
     }
 
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
+    SLD_API_INLINE_ARRAY_LIST
     is_empty(
-        void) -> bool {
+        void) const -> bool {
 
-        assert_valid();
-        return(count == 0);
+        this->assert_valid();
+        return(this->count == 0);
     }
-
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
+    SLD_API_INLINE_ARRAY_LIST
     is_full(
-        void) -> bool {
+        void) const -> bool {
 
-        assert_valid();
-        return(count >= capacity);
+        this->assert_valid();
+        return(this->count == this->capacity);
     }
 
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
-    is_not_full(
-        void) -> bool {
-
-        assert_valid();
-        return(count < capacity);
-    }
-
-    SLD_ARRAY_LIST_IMPL_INLINE
-    get_index_of_element(
-        const t* element) -> u32 {
-
-        assert_valid();
-
-        const addr element_start = (addr)element;
-        const u32  addr_diff     = (element_start - array_list->start); 
-        const bool does_exist    = (addr_diff % array_list->stride) == 0;
-        const u32  index         = (does_exist) 
-            ? (addr_diff / array_list->stride)
-            : ARRAY_LIST_INDEX_INVALID;
-
-        return(does_exist ? index : ARRAY_LIST_INDEX_INVALID);
-    }
-
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
-    get_first_element(
-        void) -> t* {
-
-        array_list_assert_valid(array_list);
-        return(array_list->start);
-    }
-
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
-    get_last_element(
-        void) -> t* {
-
-        assert_valid();
-        return(&start[count - 1]);
-    }
-
-    SLD_ARRAY_LIST_IMPL_INLINE
-    add_element(
-        const t* element) -> bool {
-
-        array_list_assert_valid(array_list);
+    SLD_API_INLINE_ARRAY_LIST
+    assert_valid(
+        void) const -> void {
         
-        bool can_add = true;
-        can_add &= (element != NULL);
-        can_add &= array_list_is_not_full(array_list);
-        if(!can_add) return(false);
-
-        return(false);
+        assert(this->is_valid());
     }
 
-    SLD_ARRAY_LIST_IMPL_INLINE 
-    insert_element_at(
-        const t*  element,
-        const u32 index) -> bool {
+    SLD_API_INLINE_ARRAY_LIST
+    reset(
+        void) -> void {
 
-        assert_valid();
-
-        bool can_insert = true;
-        can_insert &= (element != NULL);
-        can_insert &= (index   <  count);
-        can_insert &= (index   <  count);
-        can_insert &= is_not_full();
-        if (!can_insert) return(false);
-
-
-        return(true);
+        this->assert_valid();
+        this->count = 0;
     }
 
-    SLD_ARRAY_LIST_IMPL_INLINE 
-    remove_element_at(
-        const u32 index) -> bool {
+    SLD_API_INLINE_ARRAY_LIST
+    first(
+        void) const -> element_t& {
 
-        return(false);
+        element_t& elmnt = (!this->is_empty())
+            ? this->array[0]
+            : NULL;
+
+        return(elmnt);
     }
 
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR 
-    get_element_at(
-        const u32 index) -> t* {
+    SLD_API_INLINE_ARRAY_LIST
+    last(
+        void) const -> element_t& {
 
-        array_list_assert_valid(array_list);
+        const u32 index = (this->count - 1);
 
-        bool can_get = (index < count);
-        if (!can_get) return(NULL);
-
-
-
-        return(element_ptr); 
-    }
-
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR 
-    get_next_element(
-        const t* current) -> t* {
-
-        assert_valid();
+        element_t& elmnt = (!this->is_empty())
+            ? this->array[index]
+            : NULL;
         
+        return(elmnt);
     }
 
-    SLD_ARRAY_LIST_IMPL_CONSTEXPR
-    get_size_of_element(
-        void) -> u32 {
+    SLD_API_INLINE_ARRAY_LIST
+    add(
+        const element_t* element) -> bool {
 
-        return(sizeof(t));
+        assert(
+            this->is_valid() &&
+            element != NULL
+        );
+
+        const bool can_add = !this->is_full(); 
+        if (can_add) {
+            const u32 index = this->count;
+
+            auto      dst  = (void*)&this->array[index];
+            auto      src  = (void*)element;
+            const u32 size = sizeof(element_t);
+            memccpy(dst,src, size);
+            
+            ++this->count;
+        } 
+        return(can_add);
     }
 
+    SLD_API_INLINE_ARRAY_LIST
+    add(
+        const element_t& element) -> bool {
+
+        this->assert_valid();
+
+        const bool can_add = !this->is_full(); 
+        if (can_add) {
+            const u32 index = this->count;
+
+            auto      dst  = (void*)&this->array[index];
+            auto      src  = (void*)&element;
+            const u32 size = sizeof(element_t);
+            memccpy(dst,src, size);
+            
+            ++this->count;
+        } 
+        return(can_add);
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    insert_at(
+        const element_t* element,
+        const u32        index) -> bool {
+
+        assert(
+            this->is_valid() &&
+            !this->is_empty() &&
+            element != NULL  &&
+            index   < this->count &&
+        );
+
+        const u32  element_size = sizeof(element_t); 
+        const bool can_add      = !this->is_full();
+        if (can_add) {
+            
+            if (index > 0) {
+                void*       move_dst  = (void*)&this->array[index + 1];
+                const void* move_src  = (void*)&this->array[index];
+                const u32   move_size = element_size * (this->count - index);
+                memmove(
+                    move_dst
+                    move_src
+                    move_size
+                );
+            } 
+
+            void*       copy_dst = (void*)&this->array[index];
+            const void* copy_src = (void*)element;
+            memccpy(
+                copy_dst,
+                copy_src,
+                element_size
+            );
+            ++this->count;
+        }
+
+        return(can_add);
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    insert_at(
+        const element_t& element,
+        const u32        index) -> bool {
+
+        assert(
+            this->is_valid()  &&
+            !this->is_empty() &&
+            index   < this->count &&
+        );
+
+        const u32  element_size = sizeof(element_t); 
+        const bool can_add      = !this->is_full();
+        if (can_add) {
+            
+            if (index > 0) {
+                void*       move_dst  = (void*)&this->array[index + 1];
+                const void* move_src  = (void*)&this->array[index];
+                const u32   move_size = element_size * (this->count - index);
+                memmove(
+                    move_dst
+                    move_src
+                    move_size
+                );
+            } 
+
+            void*       copy_dst = (void*)&this->array[index];
+            const void* copy_src = (void*)&element;
+            memccpy(
+                copy_dst,
+                copy_src,
+                element_size
+            );
+            ++this->count;
+        }
+
+        return(can_add);
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    remove(
+        const element_t* element) -> void {
+
+        assert(
+            this->is_valid()       &&
+            element >= this->array &&
+            element <= this->array + this->count
+        );
+
+        
+
+
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    remove(
+        const element_t& element) -> void {
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    remove_at(
+        const u32  index) -> void {
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    operator[](
+        u32 index) -> element_t& {
+
+        assert(
+            this->is_valid()  &&
+            !this->is_empty() &&
+            this->count > index
+        );
+
+        element_t& elmnt = this->array[index];
+        return(elmnt); 
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    operator[](
+        u32 index) const -> const element_t& {
+
+        assert(
+            this->is_valid()  &&
+            !this->is_empty() &&
+            this->count > index
+        );
+
+        const element_t& elmnt = this->array[index];
+        return(elmnt); 
+    }
 };
 
 
