@@ -75,10 +75,11 @@ namespace sld {
 
             // check if we can copy the buffer
             // if not, return
-            bool can_write = true;
-            can_write &= (data          != NULL);
-            can_write &= (buffer.length != 0);
-            can_write &= (buffer.length <= buffer.size);
+            const bool can_write = (
+                (data          != NULL) &&
+                (buffer.length != 0)    &&
+                (buffer.length <= buffer.size)
+            );
             if (!can_write) return;
 
             // copy the buffer
