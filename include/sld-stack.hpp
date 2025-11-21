@@ -2,7 +2,6 @@
 #define SLD_STACK_HPP
 
 #include "sld.hpp"
-#include "sld-arena.hpp"
 
 #define SLD_API_INLINE_STACK          inline auto stack::
 #define SLD_API_INLINE_STACK_TEMPLATE template<typename struct_type> inline auto stack::

@@ -5,159 +5,281 @@
 #include "sld-memory.hpp"
 #include "sld-arena.hpp"
 
+#define SLD_API_INLINE_BUFFER inline auto buffer::
+
 namespace sld {
 
     //-------------------------------------------------------------------
     // API
     //-------------------------------------------------------------------
 
-    struct buffer_t {
+    struct buffer {
+
+        //members
         byte* data;
         u32   size;
         u32   length;
+
+        // methods
+        inline void init         (byte* data, const u32 size);
+        inline bool is_valid     (void) const;
+        inline void assert_valid (void) const;
+        inline void reset        (void);
+        inline u32  append_from  (const byte*   src_data, const u32 src_length);
+        inline u32  append_from  (const buffer* src_buffer);
+        inline u32  append_from  (const buffer& src_buffer);
+        inline u32  append_to    (buffer*       dst_buffer);
+        inline u32  append_to    (buffer&       dst_buffer);
+        inline u32  copy_from    (const byte*   src_data, const u32 src_length);  
+        inline u32  copy_to      (byte*         dst_data, const u32 dst_length) const;
+        inline u32  copy_to      (buffer*       dst_buffer);  
+        inline u32  copy_to      (buffer&       dst_buffer); 
+
+        // operators
+        inline byte&       operator[] (u32 index);
+        inline const byte& operator[] (u32 index) const; 
     };
-
-    SLD_API_INLINE buffer_t* buffer_init_from_memory  (const void* memory, const u32 size);
-    SLD_API_INLINE buffer_t* buffer_arena_alloc       (arena_t*    arena,  const u32 size);
-    SLD_API_INLINE bool      buffer_is_valid          (const buffer_t* buffer);
-    SLD_API_INLINE void      buffer_assert_valid      (const buffer_t* buffer);
-    SLD_API_INLINE void      buffer_reset             (buffer_t* buffer);
-    SLD_API_INLINE void      buffer_zero              (buffer_t* buffer);
-    SLD_API_INLINE u32       buffer_append            (buffer_t* buffer, const byte* src_data, const u32 src_length);
-    SLD_API_INLINE u32       buffer_copy              (buffer_t* buffer, const byte* src_data, const u32 src_length);  
-
+    
     //-------------------------------------------------------------------
     // INLINE METHODS
     //-------------------------------------------------------------------
 
-    SLD_API_INLINE buffer_t*
-    buffer_init_from_memory(
-        const void* memory,
-        const u32   size) {
+    // methods
+    SLD_API_INLINE_BUFFER
+    init(
+        byte*     data,
+        const u32 size) -> void {
 
-        bool can_init = true;
-        can_init &= (memory != NULL);
-        can_init &= (size   != 0);
-        assert(can_init);
+        assert(data != NULL && size != 0);
 
-        buffer_t* buffer = (buffer_t*)memory;
-
-        constexpr u32 struct_size = sizeof(buffer_t);
-        
-        buffer->data   = (byte*)(((addr)memory) + struct_size);
-        buffer->size   = (size - struct_size);
-        buffer->length = 0;
-        buffer_assert_valid(buffer);
-
-        return(buffer);
+        this->data   = data;
+        this->size   = size;
+        this->length = 0;
     }
 
-    SLD_API_INLINE buffer_t*
-    buffer_arena_alloc(
-        arena_t*  arena,
-        const u32 size) {
+    SLD_API_INLINE_BUFFER
+    is_valid(
+        void) const -> bool  {
 
-        const u32 total_size = sizeof(buffer_t) + size;
-        void*     memory     = arena_push_bytes(arena, total_size);
-        buffer_t* buffer     = buffer_init_from_memory(memory, total_size);
-        return(buffer);         
-    }
-
-    SLD_API_INLINE bool
-    buffer_is_valid(
-        const buffer_t* buffer) {
-
-        bool is_valid = (buffer != NULL);
-        if (is_valid) {
-            is_valid &= (buffer->data   != NULL);
-            is_valid &= (buffer->size   != 0);
-            is_valid &= (buffer->length <= buffer->size);
-        }
+        const bool is_valid = (
+            this->data   != NULL &&
+            this->size   != 0    &&
+            this->length <= this->size
+        );
         return(is_valid);
-    }   
-
-    SLD_API_INLINE void
-    buffer_assert_valid(
-        const buffer_t* buffer) {
-        assert(buffer_is_valid(buffer));
     }
 
+    SLD_API_INLINE_BUFFER
+    assert_valid(
+        void) const -> void  {
 
-    SLD_API_INLINE void
-    buffer_reset(
-        buffer_t* buffer) {
-
-        buffer_assert_valid(buffer);
-        buffer->length = 0;
+        assert(this->is_valid());
     }
 
-    SLD_API_INLINE void
-    buffer_zero(
-        buffer_t* buffer) {
-
-        buffer_assert_valid(buffer);
-        memset(buffer->data, 0, buffer->size);
-        buffer->length = 0;
+    SLD_API_INLINE_BUFFER
+    reset(
+        void) -> void {
+        
+        this->assert_valid();
+        this->length = 0;
     }
 
-    SLD_API_INLINE u32    
-    buffer_append(
-        buffer_t*   buffer,
+    SLD_API_INLINE_BUFFER
+    append_from(
         const byte* src_data,
-        const u32   src_length) {
+        const u32   src_length) -> u32  {
 
-        buffer_assert_valid(buffer);
+        assert(
+            this->is_valid()   &&
+            src_data   != NULL &&
+            src_length != 0
+        );
 
-        u32 bytes_appended = 0;
-
-        bool can_append = true;
-        can_append &= (src_data   != NULL);
-        can_append &= (src_length != NULL);
-        if (!can_append) return(bytes_appended);
-
-
-        for (
-            bytes_appended = 0;
-            (
-                bytes_appended < src_length &&
-                buffer->length < buffer->size
-            );
-            ++bytes_appended) {
-
-            buffer->data[buffer->length] = src_data[bytes_appended];
-            ++buffer->length;
-        }
-
-        return(bytes_appended);
-    }
-
-    SLD_API_INLINE u32  
-    buffer_copy(
-        buffer_t*   buffer,
-        const byte* src_data,
-        const u32   src_length) {
-
-        buffer_assert_valid(buffer);
-
-        bool result = true;
-        result &= (src_data   != NULL);
-        result &= (src_length != 0);
-        if (!result) return(0);
-
-        const u32 bytes_to_copy = (src_length < buffer->size)
+        const u32 remaining     = (this->size - this->length);
+        const u32 append_length = (remaining >= src_length)
             ? src_length
-            : buffer->size;
+            : src_length - remaining;
 
-        for (
-            buffer->length = 0;
-            buffer->length < bytes_to_copy;
-            ++buffer->length) {
+        if (append_length > 0) {
 
-            buffer->data[buffer->length] = src_data[buffer->length];
+            void* dst_data = (void*)(this->data + this->length);
+            memcpy(dst_data, src_data, append_length);
         }
-
-        return(buffer->length);
+        return(append_length);
     }
+
+    SLD_API_INLINE_BUFFER
+    append_from(
+        const buffer* src_buffer) -> u32  {
+        
+        assert(
+            this->is_valid()   &&
+            src_buffer != NULL &&
+            src_buffer->is_valid()
+        );
+
+        const u32 append_length = this->append_from(
+            src_buffer->data,
+            src_buffer->length
+        );
+        this->length += append_length;
+        return(append_length);
+    }
+
+    SLD_API_INLINE_BUFFER
+    append_from(
+        const buffer& src_buffer) -> u32  {
+        
+        assert(
+            this->is_valid()   &&
+            src_buffer.is_valid()
+        );
+
+        const u32 append_length = this->append_from(
+            src_buffer.data,
+            src_buffer.length
+        );
+
+        this->length += append_length;
+        return(append_length);
+    }
+
+    SLD_API_INLINE_BUFFER
+    append_to(
+        buffer* dst_buffer) -> u32 {
+
+        assert(
+            this->is_valid()   &&
+            dst_buffer != NULL &&
+            dst_buffer->is_valid()
+        );
+
+        const u32 append_length = dst_buffer->append_from(
+            this->data,
+            this->length
+        );
+
+        return(append_length);
+    }
+
+    SLD_API_INLINE_BUFFER
+    append_to(
+        buffer& dst_buffer) -> u32 {
+
+        assert(
+            this->is_valid()   &&
+            dst_buffer.is_valid()
+        );
+
+        const u32 append_length = dst_buffer.append_from(
+            this->data,
+            this->length
+        );
+        
+        return(append_length);
+    }
+
+    SLD_API_INLINE_BUFFER
+    copy_from(
+        const byte* src_data,
+        const u32   src_length) -> u32  {
+
+        assert(
+            this->is_valid()   &&
+            src_data   != NULL &&
+            src_length != 0
+        );
+
+        const u32 copy_length = (this->size >= src_length)
+            ? src_length
+            : src_length - this->size;
+        
+        if (copy_length > 0) {
+
+            void* dst_data = (void*)this->data;
+            memcpy(dst_data, src_data, copy_length);
+        }
+        return(copy_length);
+    }
+
+    SLD_API_INLINE_BUFFER
+    copy_to(
+        byte*     dst_data,
+        const u32 dst_length) const -> u32  {
+
+        assert(
+            this->is_valid()   &&
+            dst_data   != NULL &&
+            dst_length != 0
+        );
+
+        const u32 copy_length = (dst_length >= this->length)
+            ? this->length
+            : this->length - dst_length;
+        
+        if (copy_length > 0) {
+            const void* src_data = this->data;
+            memcpy(dst_data, src_data, copy_length);
+        }
+        return(copy_length);
+    }
+
+    SLD_API_INLINE_BUFFER
+    copy_to(
+        buffer* dst) -> u32 {
+
+        assert(
+            this->is_valid() &&
+            dst != NULL      &&
+            dst->is_valid()
+        );
+
+        dst->length = this->copy_to(
+            dst->data,
+            this->length
+        );
+        return(dst->length);
+    }
+    
+    SLD_API_INLINE_BUFFER
+    copy_to(
+        buffer& dst) -> u32 {
+
+        assert(
+            this->is_valid() &&
+            dst.is_valid()
+        );
+
+        dst.length = this->copy_to(
+            dst.data,
+            this->length
+        );
+        return(dst.length);
+    }
+
+    //-------------------------------------------------------------------
+    // INLINE OPERATORS
+    //-------------------------------------------------------------------
+
+    SLD_API_INLINE_BUFFER
+    operator[] (
+        u32 index) -> byte& {
+
+        assert(this->is_valid() && index < this->length);
+        byte& b = this->data[index];
+        return(b);
+
+    };
+
+    SLD_API_INLINE_BUFFER
+    operator[] (
+        u32 index) const -> const byte& {
+            
+        assert(this->is_valid() && index < this->length);
+        const byte& b = this->data[index];
+        return(b);
+    } 
+
 };
 
 #endif //SLD_BUFFER_HPP

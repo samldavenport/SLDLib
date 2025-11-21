@@ -38,7 +38,7 @@ namespace sld {
 
     struct xml_writer_t : pugi::xml_writer {
 
-        buffer_t buffer;
+        buffer buffer;
 
         xml_writer_t() {
             buffer.data   = NULL;
@@ -75,14 +75,15 @@ namespace sld {
 
             // check if we can copy the buffer
             // if not, return
-            bool can_write = true;
-            can_write &= (data          != NULL);
-            can_write &= (buffer.length != 0);
-            can_write &= (buffer.length <= buffer.size);
+            const bool can_write = (
+                (data          != NULL) &&
+                (buffer.length != 0)    &&
+                (buffer.length <= buffer.size)
+            );
             if (!can_write) return;
 
             // copy the buffer
-            (void)buffer_copy(&buffer, (byte*)data, size);
+            buffer.copy_from((byte*)data, size);
         }
     };
 };
