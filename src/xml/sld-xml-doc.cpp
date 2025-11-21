@@ -14,7 +14,7 @@ namespace sld {
     SLD_API bool
     xml_doc_buffer_read(
         xml_doc_t* const     doc,
-        const buffer_t* buffer) {
+        const buffer* buffer) {
 
         const u64 buffer_length = xml_doc_buffer_length(doc);
 
@@ -32,7 +32,7 @@ namespace sld {
     SLD_API bool
     xml_doc_buffer_write(
         xml_doc_t* const doc,
-        buffer_t*   buffer) {
+        buffer*   buffer) {
 
         assert(doc);
 

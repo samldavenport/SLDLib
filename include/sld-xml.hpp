@@ -31,8 +31,8 @@ namespace sld {
     SLD_API xml_doc_t*    xml_doc_destroy               (xml_doc_t* doc);
     SLD_API void          xml_doc_reset                 (xml_doc_t* doc);
     SLD_API u32           xml_doc_buffer_length         (xml_doc_t* doc);
-    SLD_API bool          xml_doc_buffer_read           (xml_doc_t* doc, const buffer_t* buffer);
-    SLD_API bool          xml_doc_buffer_write          (xml_doc_t* doc, buffer_t*       buffer);
+    SLD_API bool          xml_doc_buffer_read           (xml_doc_t* doc, const buffer* buffer);
+    SLD_API bool          xml_doc_buffer_write          (xml_doc_t* doc, buffer*       buffer);
     SLD_API u32           xml_doc_get_child_node_count  (xml_doc_t* doc, const xml_utf8_t* name);
     SLD_API xml_node_t*   xml_doc_get_child_node        (xml_doc_t* doc, const xml_utf8_t* name);
     SLD_API xml_node_t*   xml_doc_add_child_node        (xml_doc_t* doc, const xml_utf8_t* name);
