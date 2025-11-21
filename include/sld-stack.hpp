@@ -4,8 +4,8 @@
 #include "sld.hpp"
 #include "sld-arena.hpp"
 
-#define SLD_API_INLINE_STACK          inline auto stack_t::
-#define SLD_API_INLINE_STACK_TEMPLATE template<typename struct_type_t> inline auto stack_t::
+#define SLD_API_INLINE_STACK          inline auto stack::
+#define SLD_API_INLINE_STACK_TEMPLATE template<typename struct_type> inline auto stack::
 
 namespace sld {
 
@@ -15,7 +15,7 @@ namespace sld {
 
     constexpr u32 STACK_DEFAULT_ALIGNMENT = 4;
 
-    struct stack_t {
+    struct stack {
 
         // members        
         byte* data;
@@ -34,8 +34,8 @@ namespace sld {
         inline void  save_position (void);
 
         // template methods
-        template<typename struct_type_t> inline struct_type_t* push_struct (void);
-        template<typename struct_type_t> inline bool           pull_struct (void);
+        template<typename struct_type> inline struct_type* push_struct (void);
+        template<typename struct_type> inline bool         pull_struct (void);
     };
 
     //-------------------------------------------------------------------
@@ -155,10 +155,10 @@ namespace sld {
     // template methods
     SLD_API_INLINE_STACK_TEMPLATE
     push_struct(
-        void) -> struct_type_t* {
+        void) -> struct_type* {
 
-        const u32      struct_size = sizeof(struct_type_t);
-        struct_type_t* struct_inst = (struct_type_t*)this->push(struct_size);
+        const u32      struct_size = sizeof(struct_type);
+        struct_type* struct_inst = (struct_type*)this->push(struct_size);
         return(struct_inst);
     }
     
@@ -166,7 +166,7 @@ namespace sld {
     pull_struct(
         void) -> bool {
 
-        const u32  struct_size = sizeof(struct_type_t);
+        const u32  struct_size = sizeof(struct_type);
         const bool did_pull    = this->pull(struct_size); 
         return(did_pull);
     }
