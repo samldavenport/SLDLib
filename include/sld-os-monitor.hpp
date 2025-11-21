@@ -13,9 +13,9 @@ namespace sld {
     struct os_monitor_screen_size;
 
     using os_monitor_count_f        = u32               (*) (void);
-    using os_monitor_working_area_f = void              (*) (os_monitor_working_area& monitor_working_area);
-    using os_monitor_info_f         = void              (*) (os_monitor_info*         monitor_info);
-    using os_monitor_primary_f      = os_monitor_handle (*) (void);
+    using os_monitor_get_working_area_f = void              (*) (os_monitor_working_area& monitor_working_area);
+    using os_monitor_get_info_f         = void              (*) (os_monitor_info*         monitor_info);
+    using os_monitor_get_primary_f      = os_monitor_handle (*) (void);
     using os_monitor_from_point_f   = os_monitor_handle (*) (const u32 x, const u32 y);
 
     struct os_monitor_handle : vptr_t { };

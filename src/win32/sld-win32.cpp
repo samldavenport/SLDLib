@@ -23,9 +23,9 @@ namespace sld {
 
     // monitors
     os_monitor_count_f                os_monitor_count                 = win32_monitor_count;
-    os_monitor_working_area_f         os_monitor_working_area          = win32_monitor_working_area; 
-    os_monitor_info_f                 os_monitor_info                  = win32_monitor_info;
-    os_monitor_primary_f              os_monitor_primary               = win32_monitor_primary;
+    os_monitor_get_working_area_f     os_monitor_working_area          = win32_monitor_working_area; 
+    os_monitor_get_info_f             os_monitor_info                  = win32_monitor_info;
+    os_monitor_get_primary_f          os_monitor_primary               = win32_monitor_primary;
     os_monitor_from_point_f           os_monitor_from_point            = win32_monitor_from_point;
 
     // window

@@ -42,9 +42,9 @@ namespace sld {
     //-------------------------------------------------------------------
 
     SLD_API_OS os_monitor_count_f               os_monitor_count;
-    SLD_API_OS os_monitor_working_area_f        os_monitor_working_area;
-    SLD_API_OS os_monitor_info_f                os_monitor_info;
-    SLD_API_OS os_monitor_primary_f             os_monitor_primary;
+    SLD_API_OS os_monitor_get_working_area_f        os_monitor_working_area;
+    SLD_API_OS os_monitor_get_info_f                os_monitor_info;
+    SLD_API_OS os_monitor_get_primary_f             os_monitor_primary;
     SLD_API_OS os_monitor_from_point_f          os_monitor_from_point; 
 
     //-------------------------------------------------------------------
