@@ -41,18 +41,18 @@ namespace sld {
     // MONITORS
     //-------------------------------------------------------------------
 
-    SLD_API_OS os_monitor_count_f               os_monitor_count;
-    SLD_API_OS os_monitor_working_area_f        os_monitor_working_area;
-    SLD_API_OS os_monitor_info_f                os_monitor_info;
-    SLD_API_OS os_monitor_primary_f             os_monitor_primary;
-    SLD_API_OS os_monitor_from_point_f          os_monitor_from_point; 
+    SLD_API_OS os_monitor_count_f                os_monitor_count;
+    SLD_API_OS os_monitor_get_working_area_f     os_monitor_get_working_area;
+    SLD_API_OS os_monitor_get_info_f             os_monitor_get_info;
+    SLD_API_OS os_monitor_get_primary_f          os_monitor_get_primary;
+    SLD_API_OS os_monitor_from_point_f           os_monitor_from_point; 
 
     //-------------------------------------------------------------------
     // WINDOW
     //-------------------------------------------------------------------
 
     SLD_API_OS os_window_create_f               os_window_create; 
-    SLD_API_OS os_window_update_f               os_window_update; 
+    SLD_API_OS os_window_process_events_f               os_window_update; 
     SLD_API_OS os_window_swap_buffers_f         os_window_swap_buffers; 
     SLD_API_OS os_window_destroy_f              os_window_destroy; 
     SLD_API_OS os_window_show_f                 os_window_show; 
@@ -103,7 +103,7 @@ namespace sld {
     SLD_API_OS os_thread_mutex_destroy_f        os_thread_mutex_destroy;
     SLD_API_OS os_thread_mutex_lock_f           os_thread_mutex_lock;
     SLD_API_OS os_thread_mutex_unlock_f         os_thread_mutex_unlock;
-    SLD_API_OS os_thread_mutex_try_lock_f       os_thread_mutex_try_lock;
+    SLD_API_OS os_thread_mutex_lock_f           os_thread_mutex_lock;
     SLD_API_OS os_thread_condition_create_f     os_thread_condition_create;
     SLD_API_OS os_thread_condition_destroy_f    os_thread_condition_destroy;
     SLD_API_OS os_thread_condition_wait_f       os_thread_condition_wait;

@@ -11,8 +11,8 @@ namespace sld {
     //-------------------------------------------------------------------
 
     // directx12
-    const os_window_error_t  win32_window_directx12_update       (const os_window_handle_t window_handle, os_window_update_t&   update);
-    const os_window_error_t  win32_window_directx12_swap_buffers (const os_window_handle_t window_handle);
+    const os_window_error  win32_window_directx12_update       (const os_window_handle window_handle, os_window_update&   update);
+    const os_window_error  win32_window_directx12_swap_buffers (const os_window_handle window_handle);
     LPWNDCLASSA              win32_window_directx12_get_class    (void);
     LRESULT CALLBACK         win32_window_directx12_callback     (HWND handle, UINT message, WPARAM w_param, LPARAM l_param);
     ImGuiContext*            win32_window_directx12_imgui_init   (HWND handle);
@@ -21,27 +21,27 @@ namespace sld {
     // OS API
     //-------------------------------------------------------------------
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC const os_window_error
     win32_window_directx12_create(
-        os_window_handle_t&         window_handle,
+        os_window_handle&         window_handle,
         const c8*                   title,
-        const os_window_size_t&     size,
-        const os_window_pos_t& position) {
+        const os_window_size&     size,
+        const os_window_pos& position) {
 
-        os_window_error_t error = {os_window_error_e_success};
+        os_window_error error = {os_window_error_e_success};
         return(error);
     }
 
-    SLD_API_OS_FUNC const os_window_error_t
+    SLD_API_OS_FUNC const os_window_error
     win32_window_directx12_update(
-        const os_window_handle_t window_handle,
-        os_window_update_t&      update) {
+        const os_window_handle window_handle,
+        os_window_update&      update) {
 
     }
     
-    SLD_API_OS_FUNC inline const os_window_error_t
+    SLD_API_OS_FUNC inline const os_window_error
     win32_window_directx12_swap_buffers(
-        const os_window_handle_t window_handle) {
+        const os_window_handle window_handle) {
 
     }
 

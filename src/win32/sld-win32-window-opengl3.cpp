@@ -12,8 +12,8 @@ namespace sld {
     // DECLARATIONS
     //-------------------------------------------------------------------
 
-    bool                      win32_window_opengl3_update       (os_window_handle_t* window, os_window_update_t*  update);
-    bool                      win32_window_opengl3_swap_buffers (os_window_handle_t* window);
+    bool                      win32_window_opengl3_update       (os_window_handle* window, os_window_events*  update);
+    bool                      win32_window_opengl3_swap_buffers (os_window_handle* window);
     LPWNDCLASSA               win32_window_opengl3_get_class    (void);
     LRESULT CALLBACK          win32_window_opengl3_callback     (HWND handle, UINT message, WPARAM w_param, LPARAM l_param);
     ImGuiContext*             win32_window_opengl3_imgui_init   (HWND handle);
@@ -24,10 +24,10 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_opengl3_create(
-        os_window_handle_t*     window,
+        os_window_handle*     window,
         const cchar*            title,
-        const os_window_size_t* size,
-        const os_window_pos_t*  position) {
+        const os_window_size* size,
+        const os_window_pos*  position) {
 
         assert(
             window   != NULL &&
@@ -96,9 +96,9 @@ namespace sld {
 
     SLD_API_OS_FUNC bool 
     win32_window_opengl3_set_viewport(
-        os_window_handle_t*     window,
-        const os_window_size_t* size,
-        const os_window_pos_t*  position) {
+        os_window_handle*     window,
+        const os_window_size* size,
+        const os_window_pos*  position) {
 
         assert(
             window   != NULL &&
@@ -117,8 +117,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool 
     win32_window_opengl3_set_clear_color(
-        os_window_handle_t*      window,
-        const os_window_color_t* color) {
+        os_window_handle*      window,
+        const os_window_color* color) {
 
         assert(window != NULL && color != NULL);
 
@@ -137,8 +137,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool 
     win32_window_opengl3_update(
-        os_window_handle_t* window,
-        os_window_update_t* update) {
+        os_window_handle* window,
+        os_window_events* update) {
 
         assert(window != NULL && update != NULL);
 
@@ -152,7 +152,7 @@ namespace sld {
     
     SLD_API_OS_FUNC bool 
     win32_window_opengl3_swap_buffers(
-        os_window_handle_t* window) {
+        os_window_handle* window) {
 
         assert(window);
         win32_window_clear_last_error();

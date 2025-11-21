@@ -23,15 +23,15 @@ namespace sld {
 
     // monitors
     os_monitor_count_f                os_monitor_count                 = win32_monitor_count;
-    os_monitor_working_area_f         os_monitor_working_area          = win32_monitor_working_area; 
-    os_monitor_info_f                 os_monitor_info                  = win32_monitor_info;
-    os_monitor_primary_f              os_monitor_primary               = win32_monitor_primary;
+    os_monitor_get_working_area_f     os_monitor_get_working_area      = win32_monitor_working_area; 
+    os_monitor_get_info_f             os_monitor_get_info              = win32_monitor_info;
+    os_monitor_get_primary_f          os_monitor_get_primary           = win32_monitor_primary;
     os_monitor_from_point_f           os_monitor_from_point            = win32_monitor_from_point;
 
     // window
     os_window_create_f                os_window_create                 = win32_window_create;
     os_window_destroy_f               os_window_destroy                = win32_window_destroy;
-    os_window_update_f                os_window_update                 = win32_window_update;
+    os_window_process_events_f        os_window_update                 = win32_window_update;
     os_window_swap_buffers_f          os_window_swap_buffers           = win32_window_swap_buffers;
     os_window_show_f                  os_window_show                   = win32_window_show;
     os_window_get_size_f              os_window_get_size               = win32_window_get_size;

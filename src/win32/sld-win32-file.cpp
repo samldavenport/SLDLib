@@ -14,7 +14,7 @@ namespace sld {
     // GLOBALS
     //-------------------------------------------------------------------
 
-    SLD_GLOBAL os_file_error_t _file_last_error;
+    SLD_GLOBAL os_file_error _file_last_error;
 
     //-------------------------------------------------------------------
     // DECLARATIONS
@@ -33,7 +33,7 @@ namespace sld {
     void            win32_file_set_last_error         (void);
     void            win32_file_clear_last_error       (void);
     const u64       win32_file_get_buffer_granularity (void);
-    LPOVERLAPPED    win32_file_get_overlapped         (os_file_async_t* async);
+    LPOVERLAPPED    win32_file_get_overlapped         (os_file_async* async);
 
     //-------------------------------------------------------------------
     // FILE METHODS
@@ -41,8 +41,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_open(
-        os_file_handle_t*       file,
-        const os_file_config_t* config,
+        os_file_handle*       file,
+        const os_file_config* config,
         const cchar*            path) {
 
         // check args
@@ -107,7 +107,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_close(
-        os_file_handle_t* file) {
+        os_file_handle* file) {
 
         assert(file);
 
@@ -124,7 +124,7 @@ namespace sld {
 
     SLD_API_OS_FUNC u64
     win32_file_get_size(
-        os_file_handle_t* file) {
+        os_file_handle* file) {
 
         assert(file);
 
@@ -142,8 +142,8 @@ namespace sld {
 
     SLD_API_OS_FUNC u64 
     win32_file_read(
-        os_file_handle_t* file,
-        os_file_buffer_t* buffer) {
+        os_file_handle* file,
+        os_file_buffer* buffer) {
 
         // check args and clear error
         assert(
@@ -196,8 +196,8 @@ namespace sld {
 
     SLD_API_OS_FUNC u64 
     win32_file_write(
-        os_file_handle_t* file,
-        os_file_buffer_t* buffer) {
+        os_file_handle* file,
+        os_file_buffer* buffer) {
 
         // check args and clear error
         assert(
@@ -254,8 +254,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_create(
-        os_file_handle_t* file,
-        os_file_async_t*  async) {
+        os_file_handle* file,
+        os_file_async*  async) {
 
         assert(file != NULL && async != NULL);
         win32_file_clear_last_error();
@@ -287,8 +287,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_destroy(
-        os_file_handle_t* file,
-        os_file_async_t*  async) {
+        os_file_handle* file,
+        os_file_async*  async) {
 
         assert(file != NULL && async != NULL);
         win32_file_clear_last_error();
@@ -306,9 +306,9 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_read(
-        os_file_handle_t* file,
-        os_file_async_t*  async,
-        os_file_buffer_t* buffer) {
+        os_file_handle* file,
+        os_file_async*  async,
+        os_file_buffer* buffer) {
 
         assert(
             file           != NULL &&
@@ -341,9 +341,9 @@ namespace sld {
     
     SLD_API_OS_FUNC bool
     win32_file_async_write(
-        os_file_handle_t* file,
-        os_file_async_t*  async,
-        os_file_buffer_t* buffer) {
+        os_file_handle* file,
+        os_file_async*  async,
+        os_file_buffer* buffer) {
 
         assert(
             file           != NULL &&
@@ -381,8 +381,8 @@ namespace sld {
 
     SLD_API_OS_FUNC u64
     win32_file_async_get_result(
-        os_file_handle_t* file,
-        os_file_async_t*  async) {
+        os_file_handle* file,
+        os_file_async*  async) {
 
         assert(file != NULL && async != NULL);
 
@@ -411,8 +411,8 @@ namespace sld {
 
     SLD_API_OS_FUNC u64
     win32_file_async_wait(
-        os_file_handle_t* file,
-        os_file_async_t*  async) {
+        os_file_handle* file,
+        os_file_async*  async) {
 
         assert(file != NULL && async != NULL);
 
@@ -470,8 +470,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_async_cancel(
-        os_file_handle_t* file,
-        os_file_async_t*  async) {
+        os_file_handle* file,
+        os_file_async*  async) {
 
         assert(file != NULL && async != NULL);
 
@@ -498,9 +498,9 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_create(
-        os_file_handle_t*               file_hnd,
-        os_file_map_handle_t*           map_hnd,
-        os_file_buffer_t*               buffer) {
+        os_file_handle*               file_hnd,
+        os_file_map_handle*           map_hnd,
+        os_file_buffer*               buffer) {
 
         assert(file_hnd != NULL && map_hnd != NULL && buffer != NULL);
         win32_file_clear_last_error();
@@ -579,9 +579,9 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_destroy(
-        os_file_handle_t*     file_hnd,
-        os_file_map_handle_t* map_hnd,
-        os_file_buffer_t*     buffer) {
+        os_file_handle*     file_hnd,
+        os_file_map_handle* map_hnd,
+        os_file_buffer*     buffer) {
 
         assert(file_hnd != NULL && map_hnd != NULL && buffer != NULL);
 
@@ -611,9 +611,9 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_read(
-        os_file_handle_t*     file_hnd,
-        os_file_map_handle_t* map_hnd,
-        os_file_buffer_t*     buffer) {
+        os_file_handle*     file_hnd,
+        os_file_map_handle* map_hnd,
+        os_file_buffer*     buffer) {
 
         assert(
             file_hnd != NULL &&
@@ -719,9 +719,9 @@ namespace sld {
     
     SLD_API_OS_FUNC bool
     win32_file_mapped_buffer_write(
-        os_file_handle_t*     file_hnd,
-        os_file_map_handle_t* map_hnd,
-        os_file_buffer_t*     buffer) {
+        os_file_handle*     file_hnd,
+        os_file_map_handle* map_hnd,
+        os_file_buffer*     buffer) {
 
         assert(
             file_hnd != NULL &&
@@ -814,7 +814,7 @@ namespace sld {
 
     SLD_API_OS_INTERNAL LPOVERLAPPED
     win32_file_get_overlapped(
-        os_file_async_t* async) {
+        os_file_async* async) {
 
         LPOVERLAPPED overlapped = (LPOVERLAPPED)async->data;
         assert(overlapped);

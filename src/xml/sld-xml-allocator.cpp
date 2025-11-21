@@ -33,7 +33,7 @@ namespace sld {
 
         // initialize the doc
         xml_doc_t* doc = new (memory_doc.ptr) xml_doc_t();
-        stack_init(&doc->stack, memory_stack.bytes, memory_stack.size);
+        doc->stack.init(memory_stack.bytes, memory_stack.size);
 
         return(doc);
     }
