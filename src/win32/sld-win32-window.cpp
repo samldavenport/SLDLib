@@ -40,7 +40,7 @@ namespace sld {
     // common
     void win32_window_set_last_error   (void);
     void win32_window_clear_last_error (void);
-    void win32_window_process_events   (os_window_handle* window, os_window_update* update);
+    void win32_window_process_events   (os_window_handle* window, os_window_events* update);
     bool win32_window_peek_message     (win32_window_message_peek_args_t& peek_args);
 
     //-------------------------------------------------------------------
@@ -226,7 +226,7 @@ namespace sld {
     SLD_API_OS_INTERNAL void 
     win32_window_process_events(
         os_window_handle* window,
-        os_window_update* update) {
+        os_window_events* update) {
 
         const HWND window_handle = (HWND)window->val; 
  

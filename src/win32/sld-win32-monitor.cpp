@@ -47,7 +47,7 @@ namespace sld {
 
             // copy the win32 info to our structure
             os_monitor_info& monitor_info = enumerator->monitor_info[enumerator->index];            
-            monitor_info.os_handle    = h_monitor;
+            monitor_info.handle.val   = h_monitor;
             monitor_info.index        = enumerator->index;
             monitor_info.pixel_width  = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
             monitor_info.pixel_height = (win32_monitor_info.rcMonitor.bottom - win32_monitor_info.rcMonitor.top); 
@@ -100,17 +100,17 @@ namespace sld {
 
     }
 
-    static os_monitor_t
+    static os_monitor_handle
     win32_monitor_primary(
         void) {
 
         POINT        origin    = { 0, 0 };
         HMONITOR     h_monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
-        os_monitor_t monitor   = { h_monitor };
+        os_monitor_handle monitor   = { h_monitor };
         return(monitor);
     }
 
-    static os_monitor_t
+    static os_monitor_handle
     win32_monitor_from_point(
         const u32 x,
         const u32 y) {
@@ -120,7 +120,7 @@ namespace sld {
         POINT    point   = { long_x, long_y };
         HMONITOR h_monitor = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
 
-        os_monitor_t monitor = { h_monitor };
+        os_monitor_handle monitor = { h_monitor };
         return(monitor);
     }
 };

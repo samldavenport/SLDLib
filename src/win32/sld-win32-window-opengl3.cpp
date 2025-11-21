@@ -12,7 +12,7 @@ namespace sld {
     // DECLARATIONS
     //-------------------------------------------------------------------
 
-    bool                      win32_window_opengl3_update       (os_window_handle* window, os_window_update*  update);
+    bool                      win32_window_opengl3_update       (os_window_handle* window, os_window_events*  update);
     bool                      win32_window_opengl3_swap_buffers (os_window_handle* window);
     LPWNDCLASSA               win32_window_opengl3_get_class    (void);
     LRESULT CALLBACK          win32_window_opengl3_callback     (HWND handle, UINT message, WPARAM w_param, LPARAM l_param);
@@ -138,7 +138,7 @@ namespace sld {
     SLD_API_OS_FUNC bool 
     win32_window_opengl3_update(
         os_window_handle* window,
-        os_window_update* update) {
+        os_window_events* update) {
 
         assert(window != NULL && update != NULL);
 

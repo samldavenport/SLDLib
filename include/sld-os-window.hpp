@@ -19,7 +19,7 @@ namespace sld {
     struct os_window_color;
     struct os_window_event_flags;
     struct os_window_handle;
-    struct os_window_update;
+    struct os_window_events;
     struct os_window_dialog;
 
     //-------------------------------------------------------------------
@@ -29,7 +29,7 @@ namespace sld {
     using os_window_get_last_error_f     = os_window_error (*) (void);
     using os_window_create_f             = bool (*) (os_window_handle* window_hnd, const cchar* title, const os_window_size* size, const os_window_pos* position);
     using os_window_set_viewport_f       = bool (*) (os_window_handle* window_hnd, const os_window_size*  size, const os_window_pos* position); 
-    using os_window_update_f             = bool (*) (os_window_handle* window_hnd, os_window_update*      update);
+    using os_window_process_events_f     = bool (*) (os_window_handle* window_hnd, os_window_events*      events);
     using os_window_get_size_f           = bool (*) (os_window_handle* window_hnd, os_window_size*        size);
     using os_window_get_position_f       = bool (*) (os_window_handle* window_hnd, os_window_pos*         position);
     using os_window_set_clear_color_f    = bool (*) (os_window_handle* window_hnd, const os_window_color* color);
@@ -50,8 +50,8 @@ namespace sld {
     struct os_window_color       : color_u32_t     { };
     struct os_window_event_flags : u32_t           { };
 
-    struct os_window_update {
-        input_keyboard_t*       keyboard;
+    struct os_window_events {
+        input_keyboard_t*     keyboard;
         os_window_event_flags events;
     };
 
