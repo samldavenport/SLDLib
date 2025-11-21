@@ -4,145 +4,171 @@
 #include "sld.hpp"
 #include "sld-arena.hpp"
 
+#define SLD_API_INLINE_STACK          inline auto stack::
+#define SLD_API_INLINE_STACK_TEMPLATE template<typename struct_type> inline auto stack::
+
 namespace sld {
 
-
     //-------------------------------------------------------------------
-    // STACK API
+    // STACK
     //-------------------------------------------------------------------
 
-    constexpr u64 STACK_DEFAULT_ALIGNMENT = 4;
+    constexpr u32 STACK_DEFAULT_ALIGNMENT = 4;
 
-    struct stack_t {
+    struct stack {
+
+        // members        
         byte* data;
-        u64   capacity;
-        u64   position;
-        u64   save;
-    };
+        u32   capacity;
+        u32   position;
+        u32   save;
 
-    SLD_API_INLINE void  stack_init     (stack_t* stack, byte* array,    const u64 capacity);
-    SLD_API_INLINE byte* stack_push     (stack_t* stack, const u64 size, const u64 alignment = STACK_DEFAULT_ALIGNMENT);
-    SLD_API_INLINE bool  stack_pull     (stack_t* stack, const u64 size, const u64 alignment = STACK_DEFAULT_ALIGNMENT);
-    SLD_API_INLINE bool  stack_is_valid (stack_t* stack);
-    SLD_API_INLINE void  stack_assert   (stack_t* stack);
-    SLD_API_INLINE void  stack_reset    (stack_t* stack);
-    SLD_API_INLINE void  stack_revert   (stack_t* stack);
-    SLD_API_INLINE void  stack_save     (stack_t* stack);
+        // methods
+        inline void  init          (byte* data,     const u32 capacity);
+        inline byte* push          (const u32 size, const u32 alignment = STACK_DEFAULT_ALIGNMENT);
+        inline bool  pull          (const u32 size, const u32 alignment = STACK_DEFAULT_ALIGNMENT);
+        inline bool  is_valid      (void) const;
+        inline void  assert_valid  (void) const;
+        inline void  reset         (void);
+        inline void  roll_back     (void);
+        inline void  save_position (void);
+
+        // template methods
+        template<typename struct_type> inline struct_type* push_struct (void);
+        template<typename struct_type> inline bool         pull_struct (void);
+    };
 
     //-------------------------------------------------------------------
     // INLINE METHODS
     //-------------------------------------------------------------------
 
-    SLD_API_INLINE void
-    stack_init(
-        stack_t*  stack,
+    // methods
+    SLD_API_INLINE_STACK
+    init(
         byte*     data,
-        const u64 capacity) {
-        
+        const u32 capacity) -> void {
+
         assert(
-            stack    != NULL &&
             data     != NULL &&
             capacity != 0
         );
 
-        memset(data, 0, capacity);
-
-        stack->data     = data; 
-        stack->capacity = capacity;
-        stack->position = 0;
-        stack->save     = 0;
-
-        stack_assert(stack);
+        this->data     = data;
+        this->capacity = capacity;
+        this->position = 0;
+        this->save     = 0;
     }
 
-    SLD_API_INLINE bool
-    stack_is_valid(stack_t* stack)  { 
+    SLD_API_INLINE_STACK
+    push(
+        const u32 size,
+        const u32 alignment) -> byte* {
 
-        assert(stack);
+        assert(
+            this->is_valid() &&
+            size != 0
+        );
+
+        const u32 size_aligned = size_is_pow_2(alignment)
+            ? size_align_pow_2 (size, alignment)
+            : size_align       (size, alignment);
+
+        const u32 new_position = (this->position + size_aligned);
+
+        byte* push_data = NULL;
+        if (new_position <= this->capacity) {
+            push_data = &this->data[this->position];
+            this->position = new_position;
+        }
+        return(push_data);
+    }
+
+    SLD_API_INLINE_STACK
+    pull(
+        const u32 size,
+        const u32 alignment) -> bool {
+
+        assert(
+            this->is_valid() &&
+            size != 0
+        );
+
+        const u32 size_aligned = size_is_pow_2(alignment)
+            ? size_align_pow_2 (size, alignment)
+            : size_align       (size, alignment);
+
+        const bool can_pull = (size_aligned <= this->position); 
+        if (can_pull) {
+            this->position -= size_aligned;
+            if (this->position < this->save) {
+                this->save = 0;
+            }
+        };
+        return(can_pull);
+    }
+
+    SLD_API_INLINE_STACK
+    is_valid(
+        void) const -> bool {
 
         const bool is_valid = (
-            (stack->data     != NULL)            && 
-            (stack->capacity != 0)               && 
-            (stack->position <  stack->capacity) && 
-            (stack->save     <= stack->position)
+            (this->data     != 0)              &&
+            (this->capacity != 0)              &&
+            (this->position <= this->capacity) &&
+            (this->save     <= this->position)
         );
         return(is_valid);
     }
 
-    SLD_API_INLINE void
-    stack_assert(stack_t* stack) {
-        assert(stack_is_valid(stack));
+    SLD_API_INLINE_STACK
+    assert_valid(
+        void) const -> void {
+
+        assert(this->is_valid());
+    }
+    
+    SLD_API_INLINE_STACK
+    reset(
+        void) -> void {
+
+        this->assert_valid();
+        this->position = 0;
+        this->save     = 0;
     }
 
-    SLD_API_INLINE void 
-    stack_reset(
-        stack_t* stack) {
+    SLD_API_INLINE_STACK
+    roll_back(
+        void) -> void {
 
-        stack_assert(stack);
+        this->assert_valid();
+        this->position = this->save;
+    }
+    
+    SLD_API_INLINE_STACK
+    save_position(
+        void) -> void {
 
-        memset(stack->data, 0, stack->capacity);
-
-        stack->position = 0;
-        stack->save     = 0;
+        this->assert_valid();
+        this->save = this->position;
     }
 
-    SLD_API_INLINE void
-    stack_revert(stack_t* stack) {
+    // template methods
+    SLD_API_INLINE_STACK_TEMPLATE
+    push_struct(
+        void) -> struct_type* {
 
-        stack_assert(stack);
-        stack->position = stack->save;
+        const u32      struct_size = sizeof(struct_type);
+        struct_type* struct_inst = (struct_type*)this->push(struct_size);
+        return(struct_inst);
     }
+    
+    SLD_API_INLINE_STACK_TEMPLATE
+    pull_struct(
+        void) -> bool {
 
-    SLD_API_INLINE void
-    stack_save(stack_t* stack) {
-        
-        stack_assert(stack);
-        stack->save = stack->position;
-    }
-
-    SLD_API_INLINE byte*
-    stack_push(
-        stack_t*  stack,
-        const u64 size,
-        const u64 alignment) {
-
-        stack_assert(stack);
-        assert(size != 0);
-
-        const u64 align_pow_2  = size_round_up_pow2 (alignment);
-        const u64 size_aligned = size_align_pow_2   (size, align_pow_2); 
-        const u64 new_position = stack->position + size_aligned;
-        
-        bool can_push = (new_position <= stack->capacity);
-        if (!can_push) return(NULL);
-
-        byte* ptr = &stack->data[stack->position];
-        stack->position = new_position;
-
-        return(ptr);
-    }
-
-    SLD_API_INLINE bool
-    stack_pull(
-        stack_t*  stack,
-        const u64 size,
-        const u64 alignment) {
-
-        stack_assert(stack);
-        assert(size != 0);
-
-        const u64 align_pow_2  = size_round_up_pow2 (alignment);
-        const u64 size_aligned = size_align_pow_2   (size, align_pow_2); 
-        const bool can_pull    = (size_aligned <= stack->position);
-        
-        if (can_pull) {
-            stack->position -= size_aligned;
-            if (stack->save > stack->position) {
-                stack->save = 0;
-            }
-        }
-        
-        return(can_pull);
+        const u32  struct_size = sizeof(struct_type);
+        const bool did_pull    = this->pull(struct_size); 
+        return(did_pull);
     }
 };
 
