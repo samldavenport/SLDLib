@@ -103,7 +103,7 @@ namespace sld {
     SLD_API_OS os_thread_mutex_destroy_f        os_thread_mutex_destroy;
     SLD_API_OS os_thread_mutex_lock_f           os_thread_mutex_lock;
     SLD_API_OS os_thread_mutex_unlock_f         os_thread_mutex_unlock;
-    SLD_API_OS os_thread_mutex_try_lock_f       os_thread_mutex_try_lock;
+    SLD_API_OS os_thread_mutexry_lock_f       os_thread_mutexry_lock;
     SLD_API_OS os_thread_condition_create_f     os_thread_condition_create;
     SLD_API_OS os_thread_condition_destroy_f    os_thread_condition_destroy;
     SLD_API_OS os_thread_condition_wait_f       os_thread_condition_wait;

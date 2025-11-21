@@ -10,20 +10,20 @@ namespace sld {
 
     SLD_API_OS_FUNC void
     win32_system_get_cpu_info(
-        os_system_cpu_info_t& cpu_info) {
+        os_system_cpu_info& cpu_info) {
 
 
     }
 
     SLD_API_OS_FUNC void
     win32_system_get_cpu_cache_info(
-        os_system_cpu_cache_info_t& cpu_cache_info) {
+        os_system_cpu_cache_info& cpu_cache_info) {
 
     }
     
     SLD_API_OS_FUNC void
     win32_system_get_memory_info(
-        os_system_memory_info_t& memory_info) {
+        os_system_memory_info& memory_info) {
 
     }
     

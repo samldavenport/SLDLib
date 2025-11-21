@@ -26,84 +26,84 @@ namespace sld {
     enum os_file_async_state_e : u32;
     enum os_file_error_e       : s32;
 
-    struct os_file_handle_t;
-    struct os_file_config_t;
-    struct os_file_async_t;
-    struct os_file_buffer_t;
-    struct os_file_mapped_buffer_t;
-    struct os_file_access_flags_t;
-    struct os_file_share_flags_t;
-    struct os_file_error_t;
-    struct os_file_mode_t;
-    struct os_file_async_state_t;
-    struct os_file_map_handle_t;
+    struct os_file_handle;
+    struct os_file_config;
+    struct os_file_async;
+    struct os_file_buffer;
+    struct os_file_mapped_buffer;
+    struct os_file_access_flags;
+    struct os_file_share_flags;
+    struct os_file_error;
+    struct os_file_mode;
+    struct os_file_async_state;
+    struct os_file_map_handle;
 
     //-------------------------------------------------------------------
     // API
     //-------------------------------------------------------------------
 
     // error
-    using os_file_get_last_error_f        = os_file_error_t (*) (void);
+    using os_file_get_last_error_f        = os_file_error (*) (void);
 
     // file
-    using os_file_open_f                  = bool (*) (os_file_handle_t* file_hnd, const os_file_config_t* config, const cchar* path);
-    using os_file_close_f                 = bool (*) (os_file_handle_t* file_hnd);
-    using os_file_get_size_f              = u64  (*) (os_file_handle_t* file_hnd);
-    using os_file_read_f                  = u64  (*) (os_file_handle_t* file_hnd, os_file_buffer_t* buffer);
-    using os_file_write_f                 = u64  (*) (os_file_handle_t* file_hnd, os_file_buffer_t* buffer);
+    using os_file_open_f                  = bool (*) (os_file_handle* file_hnd, const os_file_config* config, const cchar* path);
+    using os_file_close_f                 = bool (*) (os_file_handle* file_hnd);
+    using os_file_get_size_f              = u64  (*) (os_file_handle* file_hnd);
+    using os_file_read_f                  = u64  (*) (os_file_handle* file_hnd, os_file_buffer* buffer);
+    using os_file_write_f                 = u64  (*) (os_file_handle* file_hnd, os_file_buffer* buffer);
 
     // async
-    using os_file_async_create_f          = bool (*) (os_file_handle_t* file_hnd, os_file_async_t* async);
-    using os_file_async_destroy_f         = bool (*) (os_file_handle_t* file_hnd, os_file_async_t* async);
-    using os_file_async_get_result        = u64  (*) (os_file_handle_t* file_hnd, os_file_async_t* async);
-    using os_file_async_wait_f            = u64  (*) (os_file_handle_t* file_hnd, os_file_async_t* async);      
-    using os_file_async_cancel_f          = bool (*) (os_file_handle_t* file_hnd, os_file_async_t* async);
-    using os_file_async_read_f            = bool (*) (os_file_handle_t* file_hnd, os_file_async_t* async, os_file_buffer_t* buffer);    
-    using os_file_async_write_f           = bool (*) (os_file_handle_t* file_hnd, os_file_async_t* async, os_file_buffer_t* buffer);    
+    using os_file_async_create_f          = bool (*) (os_file_handle* file_hnd, os_file_async* async);
+    using os_file_async_destroy_f         = bool (*) (os_file_handle* file_hnd, os_file_async* async);
+    using os_file_async_get_result        = u64  (*) (os_file_handle* file_hnd, os_file_async* async);
+    using os_file_async_wait_f            = u64  (*) (os_file_handle* file_hnd, os_file_async* async);      
+    using os_file_async_cancel_f          = bool (*) (os_file_handle* file_hnd, os_file_async* async);
+    using os_file_async_read_f            = bool (*) (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
+    using os_file_async_write_f           = bool (*) (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
 
     // buffer
-    using os_file_mapped_buffer_create_f  = bool (*) (os_file_handle_t* file_hnd, os_file_map_handle_t* map_hnd, os_file_buffer_t* buffer);
-    using os_file_mapped_buffer_destroy_f = bool (*) (os_file_handle_t* file_hnd, os_file_map_handle_t* map_hnd, os_file_buffer_t* buffer);
-    using os_file_mapped_buffer_read_f    = bool (*) (os_file_handle_t* file_hnd, os_file_map_handle_t* map_hnd, os_file_buffer_t* buffer);
-    using os_file_mapped_buffer_write_f   = bool (*) (os_file_handle_t* file_hnd, os_file_map_handle_t* map_hnd, os_file_buffer_t* buffer);
+    using os_file_mapped_buffer_create_f  = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
+    using os_file_mapped_buffer_destroy_f = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
+    using os_file_mapped_buffer_read_f    = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
+    using os_file_mapped_buffer_write_f   = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
     
 
     //-------------------------------------------------------------------
     // DEFINITIONS
     //-------------------------------------------------------------------
 
-    struct os_file_error_t        : s32_t { }; 
-    struct os_file_access_flags_t : u32_t { };
-    struct os_file_share_flags_t  : u32_t { };
-    struct os_file_mode_t         : u32_t { }; 
-    struct os_file_async_state_t  : u32_t { }; 
+    struct os_file_error        : s32_t { }; 
+    struct os_file_access_flags : u32_t { };
+    struct os_file_share_flags  : u32_t { };
+    struct os_file_mode         : u32_t { }; 
+    struct os_file_async_state  : u32_t { }; 
     
-    struct os_file_handle_t {
+    struct os_file_handle {
         vptr val;
     };
 
-    struct os_file_map_handle_t {
+    struct os_file_map_handle {
         vptr val;
     };
 
-    struct os_file_async_t {
-        os_file_async_state_t state;
+    struct os_file_async {
+        os_file_async_state state;
         u32                   timeout_ms;
         byte                  data[SLD_OS_FILE_SIZE_IO];                 
     };
 
-    struct os_file_buffer_t {
+    struct os_file_buffer {
         byte* data;
         u64   size;
         u64   offset;
         u64   cursor;
     };
 
-    struct os_file_config_t {
-        os_file_mode_t         mode;
-        os_file_access_flags_t access_flags;
-        os_file_share_flags_t  share_flags;
-        bool                   is_async;
+    struct os_file_config {
+        os_file_mode         mode;
+        os_file_access_flags access_flags;
+        os_file_share_flags  share_flags;
+        bool                 is_async;
     };
 
     //-------------------------------------------------------------------

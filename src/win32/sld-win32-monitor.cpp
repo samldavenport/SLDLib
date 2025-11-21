@@ -9,7 +9,7 @@ namespace sld {
     struct win32_monitor_enumerator_t {
         u32                count;
         u32                index;
-        os_monitor_info_t* monitor_info;        
+        os_monitor_info* monitor_info;        
     };
 
     static BOOL CALLBACK
@@ -46,7 +46,7 @@ namespace sld {
             GetMonitorInfo(h_monitor, (MONITORINFO*)&win32_monitor_info);
 
             // copy the win32 info to our structure
-            os_monitor_info_t& monitor_info = enumerator->monitor_info[enumerator->index];            
+            os_monitor_info& monitor_info = enumerator->monitor_info[enumerator->index];            
             monitor_info.os_handle    = h_monitor;
             monitor_info.index        = enumerator->index;
             monitor_info.pixel_width  = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
@@ -74,7 +74,7 @@ namespace sld {
 
     static void
     win32_monitor_working_area(
-        os_monitor_working_area_t& monitor_working_area) {
+        os_monitor_working_area& monitor_working_area) {
 
         monitor_working_area.virtual_pixel_width  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         monitor_working_area.virtual_pixel_height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
@@ -82,7 +82,7 @@ namespace sld {
 
     static void
     win32_monitor_info(
-        os_monitor_info_t* monitor_info) {
+        os_monitor_info* monitor_info) {
 
         if (!monitor_info) return;
 

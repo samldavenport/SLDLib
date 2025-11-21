@@ -24,7 +24,7 @@ namespace sld {
     // GLOBALS
     //-------------------------------------------------------------------
 
-    static os_window_error_t _window_last_error;
+    static os_window_error _window_last_error;
 
     //-------------------------------------------------------------------
     // DECLARATIONS
@@ -40,14 +40,14 @@ namespace sld {
     // common
     void win32_window_set_last_error   (void);
     void win32_window_clear_last_error (void);
-    void win32_window_process_events   (os_window_handle_t* window, os_window_update_t* update);
+    void win32_window_process_events   (os_window_handle* window, os_window_update* update);
     bool win32_window_peek_message     (win32_window_message_peek_args_t& peek_args);
 
     //-------------------------------------------------------------------
     // OS API
     //-------------------------------------------------------------------
 
-    SLD_API_OS_FUNC os_window_error_t
+    SLD_API_OS_FUNC os_window_error
     win32_window_get_last_error(
         void) {
 
@@ -56,7 +56,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_destroy(
-        os_window_handle_t* window) {
+        os_window_handle* window) {
 
         //TODO
         assert(window);
@@ -66,7 +66,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_show(
-        os_window_handle_t* window) {
+        os_window_handle* window) {
 
         assert(window);
         win32_window_clear_last_error();
@@ -85,8 +85,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_get_size(
-        os_window_handle_t*      window,
-        os_window_size_t* size) {
+        os_window_handle*      window,
+        os_window_size* size) {
         
         assert(window != NULL && size != NULL);
         win32_window_clear_last_error();
@@ -106,8 +106,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_get_position(
-        os_window_handle_t*     window,
-        os_window_pos_t* position) {
+        os_window_handle*     window,
+        os_window_pos* position) {
 
         assert(window != NULL && position != NULL);
         win32_window_clear_last_error();
@@ -127,8 +127,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_open_file_dialog(
-        os_window_handle_t*             window,
-        os_window_dialog_t*      dialog) {
+        os_window_handle*             window,
+        os_window_dialog*      dialog) {
 
         // initialize the dialog
         OPENFILENAME ofn;       
@@ -155,8 +155,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_save_file_dialog(
-        os_window_handle_t* window,
-        os_window_dialog_t* dialog) {
+        os_window_handle* window,
+        os_window_dialog* dialog) {
 
         assert(
             window != NULL &&
@@ -225,8 +225,8 @@ namespace sld {
 
     SLD_API_OS_INTERNAL void 
     win32_window_process_events(
-        os_window_handle_t* window,
-        os_window_update_t* update) {
+        os_window_handle* window,
+        os_window_update* update) {
 
         const HWND window_handle = (HWND)window->val; 
  
