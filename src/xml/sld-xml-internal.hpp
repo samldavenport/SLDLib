@@ -82,7 +82,7 @@ namespace sld {
             if (!can_write) return;
 
             // copy the buffer
-            (void)buffer_copy(&buffer, (byte*)data, size);
+            buffer.copy_from((byte*)data, size);
         }
     };
 };
