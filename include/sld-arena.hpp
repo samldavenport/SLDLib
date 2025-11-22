@@ -9,42 +9,33 @@ namespace sld {
     // ARENA API
     //-------------------------------------------------------------------
 
-    struct arena_t {
-        u64 size;
-        u64 position;
-        u64 save;
+    struct arena {
+
+        // members
+        addr start;
+        u64  size;
+        u64  position;
+        u64  save;
+
+        // methods
+        inline void  init                (const void* memory, const u64 size);
+        inline bool  is_valid            (void);
+        inline void  assert_valid        (void);
+        inline void  save_position       (void);
+        inline void  roll_back           (void);
+        inline void  reset               (void);
+        inline u64   get_space_remaining (void);
+        inline bool  can_push_bytes      (const u64 size);
+        inline byte* push_bytes          (const u64 size);
+
+        // template methods
+        inline template<typename struct_type> bool         can_push_struct (const u32 count = 1);
+        inline template<typename struct_type> struct_type* push_struct     (const u32 count = 1);
     };
-
-    constexpr u32 ARENA_HEADER_SIZE = sizeof(arena_t);
-
-    SLD_API_INLINE          bool     arena_is_valid            (const arena_t*  arena);
-    SLD_API_INLINE          void     arena_assert_valid        (const arena_t*  arena);
-    SLD_API_INLINE          memory_t arena_to_memory           (const arena_t*  arena);
-    SLD_API_INLINE          void*    arena_get_header          (const arena_t*  arena);
-    SLD_API_INLINE          void*    arena_get_start           (const arena_t*  arena);
-    SLD_API_INLINE          void*    arena_get_position        (const arena_t*  arena);
-    SLD_API_INLINE          u64      arena_get_space_remaining (const arena_t*  arena);
-    SLD_API_INLINE          bool     arena_can_push            (const arena_t*  arena, const u64 size, const u64 alignment = 0);
-    SLD_API_INLINE          arena_t* arena_from_memory         (const memory_t& memory);
-    SLD_API_INLINE          void     arena_reset               (arena_t*        arena);
-    SLD_API_INLINE          void     arena_save                (arena_t*        arena);
-    SLD_API_INLINE          void     arena_roll_back           (arena_t*        arena);
-    SLD_API_INLINE          void*    arena_push_bytes          (arena_t*        arena, const u64 size, const u64 alignment = 0);
-    SLD_API_INLINE_TEMPLATE type*    arena_push_struct         (arena_t*        arena, const u32 count = 1);
 
     //-------------------------------------------------------------------
     // ARENA INLINE METHODS
     //-------------------------------------------------------------------
-
-    SLD_API_INLINE arena_t*
-    arena_from_memory(
-        const memory_t& memory) {
-
-        memory_assert_valid(memory);
-
-        arena_t* arena = (arena_t*)memory.ptr;
-        return(arena);
-    }
 
     SLD_API_INLINE bool
     arena_is_valid(
@@ -101,39 +92,6 @@ namespace sld {
         const u64  size_remaining = arena_get_space_remaining(arena);
         const bool can_push       = size_aligned <= size_remaining;
         return(can_push); 
-    }
-
-    SLD_API_INLINE memory_t
-    arena_to_memory(
-        const arena_t* arena) {
-
-        arena_assert_valid(arena);
-
-        memory_t arena_memory;
-        arena_memory.ptr  = (void*)arena;
-        arena_memory.size = arena->size + sizeof(arena_t);
-        return(arena_memory);
-    }
-
-    SLD_API_INLINE void*
-    arena_get_start(
-        const arena_t* arena) {
-
-        arena_assert_valid(arena);
-
-        const memory_t memory_arena = arena_to_memory(arena);
-        memory_t       memory_start = memory_add_offset(memory_arena, sizeof(arena_t));
-        return(memory_start.ptr);
-    }
-
-    SLD_API_INLINE void*
-    arena_get_position(
-        const arena_t* arena) {
-
-        arena_assert_valid(arena);
-        void* arena_start  = arena_get_start  (arena);
-        void* position     = (void*)((addr)arena_start + arena->position); 
-        return(position);
     }
 
     SLD_API_INLINE void
