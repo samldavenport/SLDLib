@@ -2,7 +2,8 @@
 #define SLD_CSTR_HPP
 
 #include "sld.hpp"
-#include "sld-arena.hpp"
+
+#define SLD_API_INLINE_CSTR inline auto cstr::
 
 namespace sld {
     
@@ -10,206 +11,170 @@ namespace sld {
     // CSTR API  | C-STRING | ASCII | UTF-8
     //-------------------------------------------------------------------
 
-    struct cstr_t {
+    struct cstr {
         cchar* chars;
-        u64    size;
+        u32    size;
+
+        inline void init         (cchar* chars, const u32 size);
+        inline bool is_valid     (void);
+        inline void assert_valid (void);
+        inline void clear        (void);
+        inline u32  length       (void);
+        inline bool copy_to      (cchar* dst_chars, const u32 dst_size);
+        inline bool copy_to      (cstr*  dst_cstr);
+        inline bool copy_to      (cstr&  dst_cstr);
+        inline bool copy_from    (const cchar* src_chars, const u32 src_size);
+        inline bool copy_from    (const cstr*  src_cstr);
+        inline bool copy_from    (const cstr&  src_cstr);
     };
-
-    constexpr u32   CSTR_HEADER_SIZE     = sizeof(cstr_t);
-    constexpr cchar CSTR_NULL_TERMINATOR = 0;
-
-    SLD_API_INLINE cstr_t* cstr_memory_init  (memory_t& memory);
-    SLD_API_INLINE cstr_t* cstr_arena_alloc  (arena_t* arena, const u64 size);
-    SLD_API_INLINE bool    cstr_is_valid     (const cstr_t* cstr);
-    SLD_API_INLINE bool    cstr_is_empty     (const cstr_t* cstr);
-    SLD_API_INLINE void    cstr_assert_valid (const cstr_t* cstr);
-    SLD_API_INLINE u64     cstr_get_length   (const cstr_t* cstr);
-    SLD_API_INLINE u64     cstr_copy_to      (const cstr_t* cstr, cchar* dst_chars,  const u64 dst_size);
-    SLD_API_INLINE void    cstr_reset        (cstr_t* cstr);
-    SLD_API_INLINE void    cstr_zero         (cstr_t* cstr);
-    SLD_API_INLINE void    cstr_terminate    (cstr_t* cstr);
-    SLD_API_INLINE u64     cstr_copy_from    (cstr_t* cstr, const cchar* src_chars,  const u64 src_size);
-    SLD_API_INLINE u64     cstr_append       (cstr_t* cstr, const cchar* src_chars,  const u64 src_size);
-
-    //-------------------------------------------------------------------
-    // CSTR INLINE METHODS
-    //-------------------------------------------------------------------
-
-    SLD_API_INLINE cstr_t*
-    cstr_memory_init(
-        memory_t& memory) {
-
-        const bool can_init = memory_is_valid(memory) && (memory.size > CSTR_HEADER_SIZE); 
-        assert(can_init);
-
-        cstr_t* cstr = (cstr_t*)memory.ptr;
-        cstr->chars  = (cchar*)(memory.addr + CSTR_HEADER_SIZE);  
-        cstr->size   = (memory.size - CSTR_HEADER_SIZE);
-        cstr->chars[cstr->size - 1] = CSTR_NULL_TERMINATOR;
-        cstr->chars[0]              = CSTR_NULL_TERMINATOR;
-        cstr_assert_valid(cstr);
-
-        return(cstr);
-    }
-
-    SLD_API_INLINE cstr_t*
-    cstr_arena_alloc(
-        arena_t*  arena,
-        const u64 size) {
-
-        memory_t cstr_memory;
-        cstr_memory.size = (size + CSTR_HEADER_SIZE);
-        cstr_memory.ptr  = arena_push_bytes(arena, cstr_memory.size);
-        cstr_t* cstr     = cstr_memory_init(cstr_memory);
-        return(cstr);
+    
+    SLD_API_INLINE void
+    cstr::init(
+        cchar*    chars,
+        const u32 size) { 
+        
+        assert(chars != NULL && size != 0);
+        this->chars = chars;
+        this->size  = size;
     }
 
     SLD_API_INLINE bool
-    cstr_is_valid(
-        const cstr_t* cstr) {
+    cstr::is_valid(
+        void) {
 
-        bool is_valid = (cstr != NULL);
+        const bool is_valid = (
+            this->chars != NULL &&
+            this->size  != 0
+        );
         if (is_valid) {
-            is_valid &= (cstr->chars                 != NULL);
-            is_valid &= (cstr->size                  != 0);
-            is_valid &= (cstr->chars[cstr->size - 1] == CSTR_NULL_TERMINATOR);
+            this->chars[this->size - 1] = 0;
         }
         return(is_valid);
     }
 
+    SLD_API_INLINE void
+    cstr::assert_valid(
+        void) {
+
+        assert(this->is_valid());
+    }
 
     SLD_API_INLINE void
-    cstr_assert_valid(
-        const cstr_t* cstr) {
+    cstr::clear(
+        void) {
 
-        assert(cstr_is_valid(cstr));
+        this->assert_valid();
+        (void)memset(this->chars, 0, this->size);
+    }
+
+
+    SLD_API_INLINE u32
+    cstr::length(
+        void) {
+
+        this->assert_valid();
+
+        const u32 size = (u32)strnlen_s(
+            this->chars,
+            this->size
+        );
+
+        return(size);
     }
 
     SLD_API_INLINE bool
-    cstr_is_empty(
-        const cstr_t* cstr) {
+    cstr::copy_to(
+        cchar*    dst_chars,
+        const u32 dst_size) {
 
-        cstr_assert_valid(cstr);
+        this->assert_valid();
 
-        const bool is_empty = (cstr->chars[0] == CSTR_NULL_TERMINATOR);
-        return(is_empty);        
+        const cchar*  src_chars = this->chars;
+        const u32     src_size  = this->size; 
+        const errno_t result    = strncpy_s(
+            dst_chars, dst_size,
+            src_chars, src_size
+        );
+
+        return(result == 0);
     }
 
-    SLD_API_INLINE u64
-    cstr_get_length(
-        const cstr_t* cstr) {
+    SLD_API_INLINE bool
+    cstr::copy_to(
+        cstr* dst_cstr) {
 
-        cstr_assert_valid(cstr);
+        assert(
+            this->is_valid() &&
+            dst_cstr != NULL &&
+            dst_cstr->is_valid()
+        );
 
-        u32 length = 0;
-        for (
-              length = 0;
-              length < cstr->size;
-            ++length) {
+        const cchar*  src_chars = this->chars;
+        const u32     src_size  = this->size; 
+        const errno_t result    = strncpy_s(
+            dst_cstr->chars, dst_cstr->size,
+            src_chars,       src_size
+        );
 
-            if (cstr->chars[length] == 0) break;
-        }
-
-        assert(length <= cstr->size);
-        return(length);
+        return(result == 0);
     }
 
-    SLD_API_INLINE void
-    cstr_reset(
-        cstr_t* cstr) {
+    SLD_API_INLINE bool
+    cstr::copy_to(
+        cstr& dst_cstr) {
+        
+        assert(
+            this->is_valid() &&
+            dst_cstr.is_valid()
+        );
+        this->assert_valid();
 
-        cstr_assert_valid(cstr);
+        const cchar*  src_chars = this->chars;
+        const u32     src_size  = this->size; 
+        const errno_t result    = strncpy_s(
+            dst_cstr.chars, dst_cstr.size,
+            src_chars,      src_size
+        );
 
-        cstr->chars[0] = CSTR_NULL_TERMINATOR;
-        cstr_terminate(cstr);
+        return(result == 0);
     }
 
-    SLD_API_INLINE void
-    cstr_zero(
-        cstr_t* cstr) {
-
-        cstr_assert_valid(cstr);
-
-        memset(cstr->chars, 0, cstr->size);
-    }
-
-    SLD_API_INLINE void
-    cstr_terminate(
-        cstr_t* cstr) {
-
-        bool can_terminate = (cstr != NULL);
-        if (can_terminate) {
-            can_terminate &= (cstr->chars != NULL);
-            can_terminate &= (cstr->size  != 0);
-        }
-        assert(can_terminate);
-        cstr->chars[cstr->size - 1] = CSTR_NULL_TERMINATOR;
-    }
-
-    SLD_API_INLINE u64
-    cstr_copy_to(
-        const cstr_t* cstr,
-        cchar*        dst_chars,
-        const u64     dst_size) {
-
-        bool is_valid = cstr_is_valid(cstr);
-        is_valid &= (dst_chars != NULL);
-        is_valid &= (dst_size  != 0);
-
-        const u32 length = (dst_size > cstr->size)
-            ? cstr->size
-            : dst_size;
-
-        const errno_t memmove_error = memmove_s(dst_chars, dst_size, cstr->chars, cstr->size);
-        assert(memmove_error == 0);
-        return(length);
-    }
-
-    SLD_API_INLINE u64
-    cstr_copy_from(
-        cstr_t*      cstr,
+    SLD_API_INLINE bool
+    cstr::copy_from (
         const cchar* src_chars,
-        const u64    src_size) {
+        const u32    src_size) {
 
-        bool is_valid = cstr_is_valid(cstr);
-        is_valid &= (src_chars != NULL);
-        is_valid &= (src_size  != 0);
+        assert(
+            this->is_valid()  &&
+            src_chars != NULL &&
+            src_size  != 0
+        );
 
-        const u32 length = (src_size > cstr->size)
-            ? cstr->size
-            : src_size;
+        cchar*        dst_chars  = this->chars;
+        const u32     dst_size   = this->size; 
+        const errno_t result     = strncpy_s(
+            dst_chars, dst_size,
+            src_chars, src_size
+        );
 
-        const errno_t memmove_error = memmove_s(cstr->chars, cstr->size, src_chars, src_size);
-        assert(memmove_error == 0);
-        cstr_terminate(cstr);
-        return(length);
+        const bool did_copy = (result == 0); 
+        return(did_copy);
     }
 
-    SLD_API_INLINE u64
-    cstr_append(
-        cstr_t*      cstr,
-        const cchar* src_chars,
-        const u64    src_size) {
+    SLD_API_INLINE bool
+    cstr::copy_from(
+        const cstr* src_cstr) {
 
-        bool is_valid = cstr_is_valid(cstr);
-        is_valid &= (src_chars != NULL);
-        is_valid &= (src_size  != 0);
-        assert(is_valid);
+        assert(
+            this->is_valid() &&
+            src_cstr != NULL);
 
-        u64 dst_length = cstr_get_length(cstr);
-        if (dst_length == cstr->size) return(0);
+    }
 
-        const u64 dst_length_remaining = (cstr->size - dst_length);
-        const u64 append_length        = (dst_length_remaining < src_size)
-            ? dst_length_remaining
-            : src_size;
+    SLD_API_INLINE bool
+    cstr::copy_from(
+        const cstr&  src_cstr) {
 
-        cchar* dst_chars = &cstr->chars[dst_length - 1];
-
-        const errno_t memmove_error = memmove_s(dst_chars, dst_length_remaining, src_chars, src_size);
-        assert(memmove_error == 0);
-        cstr_terminate(cstr);
-        return(append_length);
     }
 };
 
