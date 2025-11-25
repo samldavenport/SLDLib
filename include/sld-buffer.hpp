@@ -2,7 +2,6 @@
 #define SLD_BUFFER_HPP
 
 #include "sld.hpp"
-#include "sld-memory.hpp"
 #include "sld-arena.hpp"
 
 #define SLD_API_INLINE_BUFFER inline auto buffer::
