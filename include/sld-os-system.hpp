@@ -34,6 +34,7 @@ namespace sld {
     struct os_system_memory_info {
         u32 page_size;
         u32 allocation_granularity;
+        u32 installed_ram_size_kb;
     };
 };
 

@@ -33,8 +33,8 @@ namespace sld {
         inline void  save_position (void);
 
         // template methods
-        template<typename struct_type> inline struct_type* push_struct (void);
-        template<typename struct_type> inline bool         pull_struct (void);
+        template<typename struct_type> inline struct_type* push_struct (const u32 count = 1);
+        template<typename struct_type> inline bool         pull_struct (const u32 count = 1);
     };
 
     //-------------------------------------------------------------------
@@ -154,18 +154,18 @@ namespace sld {
     // template methods
     SLD_API_INLINE_STACK_TEMPLATE
     push_struct(
-        void) -> struct_type* {
+        const u32 count) -> struct_type* {
 
-        const u32      struct_size = sizeof(struct_type);
+        const u32    struct_size = sizeof(struct_type) * count;
         struct_type* struct_inst = (struct_type*)this->push(struct_size);
         return(struct_inst);
     }
     
     SLD_API_INLINE_STACK_TEMPLATE
     pull_struct(
-        void) -> bool {
+        const u32 count) -> bool {
 
-        const u32  struct_size = sizeof(struct_type);
+        const u32  struct_size = sizeof(struct_type) * count;
         const bool did_pull    = this->pull(struct_size); 
         return(did_pull);
     }

@@ -25,6 +25,17 @@ namespace sld {
     win32_system_get_memory_info(
         os_system_memory_info& memory_info) {
 
+        SYSTEM_INFO sys_info;
+        GetSystemInfo(&sys_info);
+
+        ULONGLONG sys_mem;
+        GetPhysicallyInstalledSystemMemory(&sys_mem);
+
+        assert(sys_mem <= 0xFFFFFFFF);
+
+        memory_info.allocation_granularity = sys_info.dwAllocationGranularity;
+        memory_info.page_size              = sys_info.dwPageSize;
+        memory_info.installed_ram_size_kb  = (u32)sys_mem;
     }
     
     SLD_API_OS_FUNC const u64
