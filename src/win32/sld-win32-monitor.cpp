@@ -3,12 +3,12 @@
 #include <Windows.h>
 #include "sld-os.hpp"
 #include "sld-cstr.hpp"
-
+#include <stdio.h>
 namespace sld {
 
     struct win32_monitor_enumerator_t {
-        u32                count;
-        u32                index;
+        u32              count;
+        u32              index;
         os_monitor_info* monitor_info;        
     };
 
@@ -47,15 +47,17 @@ namespace sld {
 
             // copy the win32 info to our structure
             os_monitor_info& monitor_info = enumerator->monitor_info[enumerator->index];            
-            monitor_info.handle.val   = h_monitor;
-            monitor_info.index        = enumerator->index;
-            monitor_info.pixel_width  = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
-            monitor_info.pixel_height = (win32_monitor_info.rcMonitor.bottom - win32_monitor_info.rcMonitor.top); 
-            monitor_info.position_x   = win32_monitor_info.rcMonitor.left;  
-            monitor_info.position_y   = win32_monitor_info.rcMonitor.top;
-            
-            sld_monitor_name.chars = monitor_info.name_cstr;
-            (void)sld_monitor_name.copy_from(win32_monitor_info.szDevice, name_size);
+            monitor_info.handle.val                    = h_monitor;
+            monitor_info.index                         = enumerator->index;
+            monitor_info.dimensions.pixel_width        = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
+            monitor_info.dimensions.pixel_height       = (win32_monitor_info.rcMonitor.bottom - win32_monitor_info.rcMonitor.top); 
+            monitor_info.dimensions.virtual_position_x = win32_monitor_info.rcMonitor.left;  
+            monitor_info.dimensions.virtual_position_y = win32_monitor_info.rcMonitor.top;
+
+            const u32 name_size = (sizeof(win32_monitor_info.szDevice) < sizeof(monitor_info.name))
+                ? sizeof(win32_monitor_info.szDevice)
+                : sizeof(monitor_info.name); 
+            (void)sprintf_s(monitor_info.name.cstr, name_size, "%s",win32_monitor_info.szDevice);
 
             // update the index
             ++enumerator->index;
@@ -82,14 +84,12 @@ namespace sld {
 
     static void
     win32_monitor_info(
-        os_monitor_info* monitor_info) {
-
-        if (!monitor_info) return;
+        os_monitor_info& monitor_info) {
 
         win32_monitor_enumerator_t enumerator;
         enumerator.count        = GetSystemMetrics(SM_CMONITORS);
         enumerator.index        = 0;
-        enumerator.monitor_info = monitor_info;
+        enumerator.monitor_info = &monitor_info;
 
         (void)EnumDisplayMonitors(
             NULL,

@@ -169,7 +169,7 @@ namespace sld {
             auto      dst  = (void*)&this->array[index];
             auto      src  = (void*)&element;
             const u32 size = sizeof(element);
-            memccpy(dst,src, size);
+            memcpy(dst,src, size);
             
             ++this->count;
         } 
