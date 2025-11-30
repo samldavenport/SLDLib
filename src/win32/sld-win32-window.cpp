@@ -4,20 +4,6 @@
 #include <stdio.h>
 #include "sld-os.hpp"
 
-#if SLD_OS_GRAPHICS_CONTEXT_TYPE == SLD_OS_GRAPHICS_CONTEXT_OPENGL
-#   define win32_window_create       win32_window_opengl3_create
-#   define win32_window_update       win32_window_opengl3_update
-#   define win32_window_swap_buffers win32_window_opengl3_swap_buffers
-#elif SLD_OS_GRAPHICS_CONTEXT_TYPE == SLD_OS_GRAPHICS_CONTEXT_DIRECTX12
-#   define win32_window_create       win32_window_directx12_create
-#   define win32_window_update       win32_window_directx12_update
-#   define win32_window_swap_buffers win32_window_directx12_swap_buffers
-#else
-#   define win32_window_create       win32_window_opengl3_create
-#   define win32_window_update       win32_window_opengl3_update
-#   define win32_window_swap_buffers win32_window_opengl3_swap_buffers
-#endif
-
 namespace sld {
 
     //-------------------------------------------------------------------
@@ -30,7 +16,7 @@ namespace sld {
     // DECLARATIONS
     //-------------------------------------------------------------------
 
-    struct win32_window_message_peek_args_t {
+    struct win32_window_message_peek_args {
         HWND window_handle;
         MSG  message;
         u32  filter_min;
@@ -41,7 +27,7 @@ namespace sld {
     void win32_window_set_last_error   (void);
     void win32_window_clear_last_error (void);
     void win32_window_process_events   (os_window_handle* window, os_window_events* update);
-    bool win32_window_peek_message     (win32_window_message_peek_args_t& peek_args);
+    bool win32_window_peek_message     (win32_window_message_peek_args& peek_args);
 
     //-------------------------------------------------------------------
     // OS API
@@ -95,8 +81,8 @@ namespace sld {
         RECT       window_rect;
 
         const bool result = GetWindowRect(window_handle, &window_rect);
-        size->width  = (window_rect.right  - window_rect.left);  
-        size->height = (window_rect.bottom - window_rect.top);  
+        size->width       = (window_rect.right  - window_rect.left);  
+        size->height      = (window_rect.bottom - window_rect.top);  
 
         if (!result) {
             win32_window_set_last_error();
@@ -230,7 +216,7 @@ namespace sld {
 
         const HWND window_handle = (HWND)window->val; 
  
-        win32_window_message_peek_args_t msg_peek_args;
+        win32_window_message_peek_args msg_peek_args;
         msg_peek_args.filter_min    = 0;
         msg_peek_args.filter_max    = 0;
         msg_peek_args.window_handle = window_handle;
@@ -256,12 +242,7 @@ namespace sld {
                     case WM_SYSKEYDOWN: {
 
                         update->events.val |= os_window_event_e_key_down; 
-                        
-                        // const input_keycode_t keycode = win32_input_translate_keycode(
-                        //     msg_peek_args.message.wParam,
-                        //     msg_peek_args.message.lParam);
-
-                        // input_keyboard_add_key_down(update.keyboard, keycode);
+        
 
                     } break;
 
@@ -270,12 +251,6 @@ namespace sld {
                     
                         update->events.val |= os_window_event_e_key_up;
                         
-                        // const input_keycode_t keycode = win32_input_translate_keycode(
-                        //     msg_peek_args.message.wParam,
-                        //     msg_peek_args.message.lParam);
-
-                        // input_keyboard_add_key_up(update.keyboard, keycode);
-
                     } break;
 
                     case WM_MOVE:          { update->events.val |= os_window_event_e_moved;                 } break;
@@ -308,7 +283,7 @@ namespace sld {
 
     SLD_API_OS_INTERNAL bool
     win32_window_peek_message(
-        win32_window_message_peek_args_t& peek_args) {
+        win32_window_message_peek_args& peek_args) {
 
         const bool result = PeekMessage(
             &peek_args.message,

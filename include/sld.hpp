@@ -21,6 +21,11 @@
 #define SLD_API_INLINE          inline
 #define SLD_API_INLINE_TEMPLATE template<typename type> inline
 #define SLD_UTILITY             static constexpr
+#define SLD_API_OS                          extern // os api declaration
+#define SLD_API_OS_FUNC                     static // os api function
+#define SLD_API_OS_INTERNAL                 static // internal os function
+
+
 
 #ifndef assert
 #   ifdef WIN32

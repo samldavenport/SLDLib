@@ -3,6 +3,18 @@
 #include <Windows.h>
 #include "sld-os.hpp"
 
+#define win32_memory_alloc                os_memory_alloc
+#define win32_memory_free                 os_memory_free
+#define win32_memory_reserve              os_memory_reserve
+#define win32_memory_release              os_memory_release
+#define win32_memory_commit               os_memory_commit
+#define win32_memory_decommit             os_memory_decommit
+#define win32_memory_align_to_page        os_memory_align_to_page
+#define win32_memory_align_to_granularity os_memory_align_to_granularity
+#define win32_memory_is_reserved          os_memory_is_reserved
+#define win32_memory_is_committed         os_memory_is_committed
+#define win32_memory_mapping_destroy      os_memory_mapping_destroy
+
 namespace sld {
     
     SLD_API_OS_FUNC void*

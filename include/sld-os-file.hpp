@@ -39,34 +39,33 @@ namespace sld {
     struct os_file_map_handle;
 
     //-------------------------------------------------------------------
-    // API
+    // METHODS
     //-------------------------------------------------------------------
 
     // error
-    using os_file_get_last_error_f        = os_file_error (*) (void);
+    SLD_API_OS os_file_error os_file_get_last_error   (void);
 
     // file
-    using os_file_open_f                  = bool (*) (os_file_handle* file_hnd, const os_file_config* config, const cchar* path);
-    using os_file_close_f                 = bool (*) (os_file_handle* file_hnd);
-    using os_file_get_size_f              = u64  (*) (os_file_handle* file_hnd);
-    using os_file_read_f                  = u64  (*) (os_file_handle* file_hnd, os_file_buffer* buffer);
-    using os_file_write_f                 = u64  (*) (os_file_handle* file_hnd, os_file_buffer* buffer);
+    SLD_API_OS bool os_file_open                  (os_file_handle* file_hnd, const os_file_config* config, const cchar* path);
+    SLD_API_OS bool os_file_close                 (os_file_handle* file_hnd);
+    SLD_API_OS u64  os_file_get_size              (os_file_handle* file_hnd);
+    SLD_API_OS u64  os_file_read                  (os_file_handle* file_hnd, os_file_buffer* buffer);
+    SLD_API_OS u64  os_file_write                 (os_file_handle* file_hnd, os_file_buffer* buffer);
 
     // async
-    using os_file_async_create_f          = bool (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_destroy_f         = bool (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_get_result        = u64  (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_wait_f            = u64  (*) (os_file_handle* file_hnd, os_file_async* async);      
-    using os_file_async_cancel_f          = bool (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_read_f            = bool (*) (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
-    using os_file_async_write_f           = bool (*) (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
+    SLD_API_OS bool os_file_async_create          (os_file_handle* file_hnd, os_file_async* async);
+    SLD_API_OS bool os_file_async_destroy         (os_file_handle* file_hnd, os_file_async* async);
+    SLD_API_OS u64  os_file_async_get_result      (os_file_handle* file_hnd, os_file_async* async);
+    SLD_API_OS u64  os_file_async_wait            (os_file_handle* file_hnd, os_file_async* async);      
+    SLD_API_OS bool os_file_async_cancel          (os_file_handle* file_hnd, os_file_async* async);
+    SLD_API_OS bool os_file_async_read            (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
+    SLD_API_OS bool os_file_async_write           (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
 
     // buffer
-    using os_file_mapped_buffer_create_f  = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    using os_file_mapped_buffer_destroy_f = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    using os_file_mapped_buffer_read_f    = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    using os_file_mapped_buffer_write_f   = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    
+    SLD_API_OS bool os_file_mapped_buffer_create  (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
+    SLD_API_OS bool os_file_mapped_buffer_destroy (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
+    SLD_API_OS bool os_file_mapped_buffer_read    (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
+    SLD_API_OS bool os_file_mapped_buffer_write   (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
 
     //-------------------------------------------------------------------
     // DEFINITIONS

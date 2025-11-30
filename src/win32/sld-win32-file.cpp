@@ -8,6 +8,24 @@
 #   define SLD_OS_FILE_SIZE_IO sizeof(OVERLAPPED)
 #endif
 
+#define win32_file_get_last_error        os_file_get_last_error
+#define win32_file_open                  os_file_open
+#define win32_file_close                 os_file_close
+#define win32_file_get_size              os_file_get_size
+#define win32_file_read                  os_file_read
+#define win32_file_write                 os_file_write
+#define win32_file_async_create          os_file_async_create
+#define win32_file_async_destroy         os_file_async_destroy
+#define win32_file_async_get_result      os_file_async_get_result
+#define win32_file_async_wait            os_file_async_wait
+#define win32_file_async_cancel          os_file_async_cancel
+#define win32_file_async_read            os_file_async_read
+#define win32_file_async_write           os_file_async_write
+#define win32_file_mapped_buffer_create  os_file_mapped_buffer_create
+#define win32_file_mapped_buffer_destroy os_file_mapped_buffer_destroy
+#define win32_file_mapped_buffer_read    os_file_mapped_buffer_read
+#define win32_file_mapped_buffer_write   os_file_mapped_buffer_write
+
 namespace sld {
 
     //-------------------------------------------------------------------
@@ -825,13 +843,5 @@ namespace sld {
     // FUNCTION POINTERS
     //-------------------------------------------------------------------
 
-    os_file_open_f           os_file_open           = win32_file_open; 
-    //os_file_io_read_f        os_file_io_read           = win32_file_read; 
-    //os_file_io_write_f       os_file_io_write          = win32_file_write; 
-    //os_file_read_async_f     os_file_read_async     = win32_file_read_async; 
-    //os_file_write_async_f    os_file_write_async    = win32_file_write_async; 
-    //os_file_io_check_async_f os_file_io_check_async = win32_file_io_check_async; 
-    //os_file_io_wait_f        os_file_io_wait        = win32_file_io_wait; 
-    // os_file_get_size_f       os_file_get_size       = win32_file_get_size; 
-    //os_file_close_f          os_file_close          = win32_file_close; 
+
 };

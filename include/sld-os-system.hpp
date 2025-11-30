@@ -5,17 +5,29 @@
 
 namespace sld {
 
+    //-------------------------------------------------------------------
+    // TYPES
+    //-------------------------------------------------------------------
+
     struct os_system_cpu_info;
     struct os_system_cpu_cache_info;
     struct os_system_memory_info;
 
-    using os_system_get_cpu_info_f          = void         (*) (os_system_cpu_info&       cpu_info);
-    using os_system_get_cpu_cache_info_f    = void         (*) (os_system_cpu_cache_info& cpu_cache_info);
-    using os_system_get_memory_info_f       = void         (*) (os_system_memory_info&    memory_info);
-    using os_system_time_ms_f               = const u64    (*) (void);
-    using os_system_sleep_f                 = void         (*) (const u32 ms);
-    using os_system_debug_print_f           = void         (*) (const cchar* debug_string);
-    using os_system_get_working_directory_f = const cchar* (*) (void);
+    //-------------------------------------------------------------------
+    // METHODS
+    //-------------------------------------------------------------------
+
+    SLD_API_OS void         os_system_get_cpu_info          (os_system_cpu_info&       cpu_info);
+    SLD_API_OS void         os_system_get_cpu_cache_info    (os_system_cpu_cache_info& cpu_cache_info);
+    SLD_API_OS void         os_system_get_memory_info       (os_system_memory_info&    memory_info);
+    SLD_API_OS const u64    os_system_time_ms               (void);
+    SLD_API_OS void         os_system_sleep                 (const u32 ms);
+    SLD_API_OS void         os_system_debug_print           (const cchar* debug_string);
+    SLD_API_OS const cchar* os_system_get_working_directory (void);
+
+    //-------------------------------------------------------------------
+    // DEFINITIONS
+    //-------------------------------------------------------------------
 
     struct os_system_cpu_cache_info {
         u32 level;
