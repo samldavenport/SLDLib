@@ -124,7 +124,7 @@ namespace sld {
         if (!did_read) {
 
             win32_file_set_last_error();
-            async->state = (_file_last_error == os_file_error_e_io_pending)
+            async->state = (_last_error_file == os_file_error_e_io_pending)
                 ? os_file_async_state_e_pending  
                 : os_file_async_state_e_error;
         }
@@ -153,7 +153,7 @@ namespace sld {
 
         if (!overlapped_result) {
             win32_file_set_last_error();
-            async->state = (_file_last_error == os_file_error_e_io_pending)
+            async->state = (_last_error_file == os_file_error_e_io_pending)
                 ? os_file_async_state_e_pending  
                 : os_file_async_state_e_error;
             overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;

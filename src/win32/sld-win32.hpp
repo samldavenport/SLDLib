@@ -10,7 +10,8 @@ namespace sld {
     // GLOBALS
     //-------------------------------------------------------------------
 
-    SLD_GLOBAL os_file_error _file_last_error;
+    SLD_GLOBAL os_file_error   _last_error_file;
+    SLD_GLOBAL os_window_error _last_error_window;
 
     //-------------------------------------------------------------------
     // METHODS
@@ -21,6 +22,8 @@ namespace sld {
     SLD_API_OS_INTERNAL LRESULT CALLBACK win32_window_callback_imgui       (HWND handle, UINT message, WPARAM w_param, LPARAM l_param);
     SLD_API_OS_INTERNAL void             win32_window_init_class_base      (LPWNDCLASSA window_class);
     SLD_API_OS_INTERNAL void             win32_window_init_class_imgui     (LPWNDCLASSA window_class);
+    SLD_API_OS_INTERNAL void             win32_window_clear_last_error     (void);
+    SLD_API_OS_INTERNAL void             win32_window_set_last_error       (void);
 
     // file
     SLD_API_OS_INTERNAL void             win32_file_set_last_error         (void);
@@ -51,5 +54,22 @@ namespace sld {
 #define win32_file_mapped_buffer_destroy os_file_mapped_buffer_destroy
 #define win32_file_mapped_buffer_read    os_file_mapped_buffer_read
 #define win32_file_mapped_buffer_write   os_file_mapped_buffer_write
+
+#define win32_window_get_last_error      os_window_get_last_error
+#define win32_window_create              os_window_create
+#define win32_window_set_viewport        os_window_set_viewport
+#define win32_window_set_clear_color     os_window_set_clear_color
+#define win32_window_frame_start         os_window_frame_start
+#define win32_window_frame_render        os_window_frame_render
+#define win32_window_process_events      os_window_process_events
+#define win32_window_get_size            os_window_get_size
+#define win32_window_get_position        os_window_get_position
+#define win32_window_open_file_dialog    os_window_open_file_dialog
+#define win32_window_save_file_dialog    os_window_save_file_dialog
+#define win32_window_destroy             os_window_destroy
+#define win32_window_show                os_window_show
+
+
+
 
 #endif //SLD_WIN32_HPP

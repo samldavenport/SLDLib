@@ -6,57 +6,85 @@
 #include "sld-graphics.hpp"
 #include "sld-input.hpp"
 
+#ifndef SLD_OS_WINDOW_GRAPHICS_CONTEXT
+#   define SLD_OS_WINDOW_GRAPHICS_CONTEXT 0
+#endif 
+#ifndef SLD_OS_WINDOW_GUI_CONTEXT
+#   define SLD_OS_WINDOW_GUI_CONTEXT 0
+#endif 
+
+
 namespace sld {
 
     //-------------------------------------------------------------------
     // TYPES
     //-------------------------------------------------------------------
 
+    using os_window_handle           = void*;
     using os_window_graphics_context = u32;
     using os_window_gui_context      = u32; 
+    using os_window_error            = s32;
+    using os_window_event_type       = u32;
+    using os_window_keycode          = input_keycode;
 
-    struct os_window_handle;
-    struct os_window_error;
     struct os_window_size;
     struct os_window_pos;
     struct os_window_config;
     struct os_window_color;
-    struct os_window_event_flags;
-    struct os_window_handle;
-    struct os_window_events;
+    struct os_window_event;
+    struct os_window_event_list;
     struct os_window_dialog;
+    struct os_window_viewport;
+    struct os_window_color;
+    struct os_window_mouse_position;
 
     //-------------------------------------------------------------------
     // METHODS
     //-------------------------------------------------------------------
 
+    // error 
     SLD_API_OS os_window_error os_window_get_last_error   (void);
-    SLD_API_OS bool            os_window_create           (os_window_handle* window_hnd, const cchar* title, const os_window_size* size, const os_window_pos* position);
-    SLD_API_OS bool            os_window_set_viewport     (os_window_handle* window_hnd, const os_window_size*  size, const os_window_pos* position); 
-    SLD_API_OS bool            os_window_process_events   (os_window_handle* window_hnd, os_window_events*      events);
-    SLD_API_OS bool            os_window_get_size         (os_window_handle* window_hnd, os_window_size*        size);
-    SLD_API_OS bool            os_window_get_position     (os_window_handle* window_hnd, os_window_pos*         position);
-    SLD_API_OS bool            os_window_set_clear_color  (os_window_handle* window_hnd, const os_window_color* color);
-    SLD_API_OS bool            os_window_open_file_dialog (os_window_handle* window_hnd, os_window_dialog* dialog);
-    SLD_API_OS bool            os_window_save_file_dialog (os_window_handle* window_hnd, os_window_dialog* dialog);
-    SLD_API_OS bool            os_window_destroy          (os_window_handle* window_hnd);
-    SLD_API_OS bool            os_window_swap_buffers     (os_window_handle* window_hnd);
-    SLD_API_OS bool            os_window_show             (os_window_handle* window_hnd);
+
+    // graphics/gui specific
+    SLD_API_OS bool            os_window_create           (const os_window_handle window, const os_window_config*   config);
+    SLD_API_OS bool            os_window_set_viewport     (const os_window_handle window, const os_window_viewport* viewport); 
+    SLD_API_OS bool            os_window_set_clear_color  (const os_window_handle window, const os_window_color*    color);
+    SLD_API_OS bool            os_window_frame_start      (const os_window_handle window);
+    SLD_API_OS bool            os_window_frame_render     (const os_window_handle window);
+
+    // common    
+    SLD_API_OS bool            os_window_process_events   (const os_window_handle window, os_window_event_list*     event_list);
+    SLD_API_OS bool            os_window_get_size         (const os_window_handle window, os_window_size*           size);
+    SLD_API_OS bool            os_window_get_position     (const os_window_handle window, os_window_pos*            position);
+    SLD_API_OS bool            os_window_open_file_dialog (const os_window_handle window, os_window_dialog*         dialog);
+    SLD_API_OS bool            os_window_save_file_dialog (const os_window_handle window, os_window_dialog*         dialog);
+    SLD_API_OS bool            os_window_destroy          (const os_window_handle window);
+    SLD_API_OS bool            os_window_show             (const os_window_handle window);
 
     //-------------------------------------------------------------------
     // DEFINITIONS
     //-------------------------------------------------------------------
 
-    struct os_window_handle      : vptr_t          { };
-    struct os_window_error       : s32_t           { };
-    struct os_window_size        : dims_u32_size_t { };
-    struct os_window_pos         : dims_u32_pos_t  { };
-    struct os_window_color       : color_u32_t     { };
-    struct os_window_event_flags : u32_t           { };
+    struct os_window_position {
+        u32 x;
+        u32 y;
+    };
 
-    struct os_window_events {
-        input_keyboard_t*     keyboard;
-        os_window_event_flags events;
+    struct os_window_mouse_position {
+        u32 x;
+        u32 y;        
+    };
+
+    struct os_window_size {
+        u32 width;
+        u32 height;
+    };
+
+    struct os_window_viewport {
+        u32 width;
+        u32 height; 
+        u32 pos_x;
+        u32 pos_y;
     };
 
     struct os_window_dialog {
@@ -69,11 +97,32 @@ namespace sld {
     };
 
     struct os_window_config {
-        const cchar*               title;
-        os_window_size             size;
-        os_window_pos              position;
-        os_window_graphics_context graphics_context; 
-        os_window_gui_context      gui_context; 
+        cchar*             title;
+        os_window_size     size;
+        os_window_position position;
+    };
+
+    struct os_window_event_list {
+        u32              capacity;
+        u32              count;
+        os_window_event* array;
+    };
+
+    struct os_window_color {
+        byte r;
+        byte g;
+        byte b;
+        byte a;
+    };
+
+    struct os_window_event {
+        os_window_event_type type;
+        union {
+            os_window_position       window_position;
+            os_window_size           window_size;
+            os_window_keycode        keycode;
+            os_window_mouse_position mouse_position;
+        };
     };
 
     //-------------------------------------------------------------------
@@ -81,46 +130,46 @@ namespace sld {
     //-------------------------------------------------------------------
 
     enum os_window_graphics_context_e {
-        os_window_graphics_context_e_none       = 0,
-        os_window_graphics_context_e_opengl     = 1,
-        os_window_graphics_context_e_directx12  = 2,
+        os_window_graphics_context_e_none            = 0,
+        os_window_graphics_context_e_opengl          = 1,
+        os_window_graphics_context_e_directx12       = 2
     };
     enum os_window_gui_context_e {
-        os_window_gui_context_e_none            = 0,
-        os_window_gui_context_e_imgui           = 1,
+        os_window_gui_context_e_none                 = 0,
+        os_window_gui_context_e_imgui                = 1
     };
-    enum os_window_event_flag_e {
-        os_window_event_e_none                  = 0,
-        os_window_event_e_quit                  = bit_value(0),
-        os_window_event_e_destroyed             = bit_value(1),
-        os_window_event_e_moved                 = bit_value(2),
-        os_window_event_e_resized               = bit_value(3),
-        os_window_event_e_key_down              = bit_value(4),
-        os_window_event_e_key_up                = bit_value(5),
-        os_window_event_e_mouse_move            = bit_value(6),
-        os_window_event_e_mouse_left_down       = bit_value(7),
-        os_window_event_e_mouse_left_up         = bit_value(8),
-        os_window_event_e_mouse_left_dbl_click  = bit_value(9),
-        os_window_event_e_mouse_right_down      = bit_value(10),
-        os_window_event_e_mouse_right_up        = bit_value(11),
-        os_window_event_e_mouse_right_dbl_click = bit_value(12),
-        os_window_event_e_mouse_wheel           = bit_value(13)
+    enum os_window_event_type_e {
+        os_window_event_type_e_none                  = 0,
+        os_window_event_type_e_quit                  = 1,
+        os_window_event_type_e_destroyed             = 2,
+        os_window_event_type_e_moved                 = 3,
+        os_window_event_type_e_resized               = 4,
+        os_window_event_type_e_key_down              = 5,
+        os_window_event_type_e_key_up                = 6,
+        os_window_event_type_e_mouse_move            = 7,
+        os_window_event_type_e_mouse_left_down       = 8,
+        os_window_event_type_e_mouse_left_up         = 9,
+        os_window_event_type_e_mouse_left_dbl_click  = 10,
+        os_window_event_type_e_mouse_right_down      = 11,
+        os_window_event_type_e_mouse_right_up        = 12,
+        os_window_event_type_e_mouse_right_dbl_click = 13,
+        os_window_event_type_e_mouse_wheel           = 14
     };
     enum os_window_error_e {
-        os_window_error_e_success                =  1,
-        os_window_error_e_unknown                = -1,
-        os_window_error_e_resource_not_found     = -2,
-        os_window_error_e_access_denied          = -3,
-        os_window_error_e_system_out_of_memory   = -4,
-        os_window_error_e_general_out_of_memory  = -5,
-        os_window_error_e_invalid_args           = -6,
-        os_window_error_e_invalid_handle         = -7,
-        os_window_error_e_invalid_class          = -8,
-        os_window_error_e_class_already_exists   = -9,
-        os_window_error_e_invalid_device_context = -10,
-        os_window_error_e_invalid_thread         = -11,
-        os_window_error_e_invalid_resource       = -12,
-        os_window_error_e_quota_exceeded         = -13
+        os_window_error_e_success                    =  1,
+        os_window_error_e_unknown                    = -1,
+        os_window_error_e_resource_not_found         = -2,
+        os_window_error_e_access_denied              = -3,
+        os_window_error_e_system_out_of_memory       = -4,
+        os_window_error_e_general_out_of_memory      = -5,
+        os_window_error_e_invalid_args               = -6,
+        os_window_error_e_invalid_handle             = -7,
+        os_window_error_e_invalid_class              = -8,
+        os_window_error_e_class_already_exists       = -9,
+        os_window_error_e_invalid_device_context     = -10,
+        os_window_error_e_invalid_thread             = -11,
+        os_window_error_e_invalid_resource           = -12,
+        os_window_error_e_quota_exceeded             = -13
     };
 };
 

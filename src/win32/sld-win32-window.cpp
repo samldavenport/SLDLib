@@ -1,16 +1,9 @@
 #pragma once
 
-#include <Windows.h>
-#include <stdio.h>
-#include "sld-os.hpp"
+#include "sld-win32.hpp"
+#include "sld-win32-input.hpp"
 
 namespace sld {
-
-    //-------------------------------------------------------------------
-    // GLOBALS
-    //-------------------------------------------------------------------
-
-    static os_window_error _window_last_error;
 
     //-------------------------------------------------------------------
     // DECLARATIONS
@@ -22,13 +15,6 @@ namespace sld {
         u32  filter_min;
         u32  filter_max;
     };
-
-    // common
-    void win32_window_set_last_error   (void);
-    void win32_window_clear_last_error (void);
-    void win32_window_process_events   (os_window_handle* window, os_window_events* update);
-    bool win32_window_peek_message     (win32_window_message_peek_args& peek_args);
-
     //-------------------------------------------------------------------
     // OS API
     //-------------------------------------------------------------------
@@ -37,12 +23,12 @@ namespace sld {
     win32_window_get_last_error(
         void) {
 
-        return(_window_last_error);
+        return(_last_error_window);
     }
 
     SLD_API_OS_FUNC bool
     win32_window_destroy(
-        os_window_handle* window) {
+        const os_window_handle window) {
 
         //TODO
         assert(window);
@@ -52,14 +38,14 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_show(
-        os_window_handle* window) {
+        const os_window_handle window) {
 
         assert(window);
         win32_window_clear_last_error();
 
 
         static const s32 cmd_show_true  = 1;
-        const auto       window_handle  = (HWND)window->val;
+        const auto       window_handle  = (HWND)window;
         const bool       result         = ShowWindow(window_handle, cmd_show_true);
 
         if (!result) {
@@ -77,7 +63,7 @@ namespace sld {
         assert(window != NULL && size != NULL);
         win32_window_clear_last_error();
 
-        const auto window_handle  = (HWND)window->val;
+        const auto window_handle  = (HWND)window;
         RECT       window_rect;
 
         const bool result = GetWindowRect(window_handle, &window_rect);
@@ -92,13 +78,13 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_get_position(
-        os_window_handle*     window,
-        os_window_pos* position) {
+        const os_window_handle window,
+        os_window_position*    position) {
 
         assert(window != NULL && position != NULL);
         win32_window_clear_last_error();
 
-        const auto window_handle  = (HWND)window->val;
+        const auto window_handle  = (HWND)window;
         RECT       window_rect;
 
         const bool result = GetWindowRect(window_handle, &window_rect);
@@ -120,7 +106,7 @@ namespace sld {
         OPENFILENAME ofn;       
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize     = sizeof(ofn);
-        ofn.hwndOwner       = (HWND)window->val; 
+        ofn.hwndOwner       = (HWND)window; 
         ofn.lpstrFile       = (LPSTR)dialog->selection_buffer_cstr;
         ofn.lpstrInitialDir = (LPCSTR)dialog->start;
         ofn.nMaxFile        = dialog->selection_buffer_size;
@@ -141,7 +127,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_save_file_dialog(
-        os_window_handle* window,
+        const os_window_handle window,
         os_window_dialog* dialog) {
 
         assert(
@@ -155,7 +141,7 @@ namespace sld {
         OPENFILENAME ofn;       
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize     = sizeof(ofn);
-        ofn.hwndOwner       = (HWND)window->val; 
+        ofn.hwndOwner       = (HWND)window; 
         ofn.lpstrFile       = (LPSTR)dialog->selection_buffer_cstr;
         ofn.lpstrInitialDir = (LPCSTR)dialog->start;
         ofn.nMaxFile        = dialog->selection_buffer_size;
@@ -175,6 +161,98 @@ namespace sld {
         return(dialog->did_select);
     }
 
+
+    SLD_API_OS_INTERNAL bool 
+    win32_window_process_events(
+        const os_window_handle window,
+        os_window_event_list*  event_list) {
+
+        assert(
+            event_list           != NULL &&
+            event_list->capacity != 0    &&
+            event_list->array    != NULL
+        );
+
+        MSG  msg;
+        const UINT msg_filter_min = 0;
+        const UINT msg_filter_max = 0;
+        const UINT msg_remove     = PM_REMOVE;
+
+        for (
+              event_list->count = 0;
+              event_list->count <= event_list->capacity;
+            ++event_list->count) {
+
+            const bool has_message = PeekMessage(
+                &msg,
+                NULL,
+                msg_filter_min,
+                msg_filter_max,
+                msg_remove                
+            );
+
+            if (!has_message) break;
+
+            // cache the event and update the count
+            os_window_event& event = event_list->array[event_list->count];
+            ++event_list->count;
+
+            // check window-specific events
+            if (msg.hwnd == window) {
+
+                switch (msg.message) {
+                    case WM_KEYDOWN:
+                    case WM_SYSKEYDOWN: {
+                        event.type    = os_window_event_type_e_key_down;
+                        event.keycode = win32_input_get_keycode(msg.wParam);
+                    } break;
+                    case WM_KEYUP:
+                    case WM_SYSKEYUP: {
+                        event.type = os_window_event_type_e_key_up;
+                        event.keycode = win32_input_get_keycode(msg.wParam);
+                    } break;
+                    case WM_MOVE: {
+                        event.type              = os_window_event_type_e_moved;
+                        event.window_position.x = LOWORD(msg.lParam);   
+                        event.window_position.y = HIWORD(msg.lParam);   
+                    } break;
+                    case WM_SIZE: {
+                        event.type               = os_window_event_type_e_resized;
+                        event.window_size.width  = LOWORD(msg.lParam);   
+                        event.window_size.height = HIWORD(msg.lParam);  
+                    } break;
+                    case WM_MOUSEMOVE: {
+                        event.type             = os_window_event_type_e_mouse_move;
+                        event.mouse_position.x = LOWORD(msg.lParam);   
+                        event.mouse_position.y = HIWORD(msg.lParam);
+                    } break;
+                    case WM_LBUTTONDOWN:   { event.type = os_window_event_type_e_mouse_left_down;       } break;
+                    case WM_LBUTTONUP:     { event.type = os_window_event_type_e_mouse_left_up;         } break;
+                    case WM_LBUTTONDBLCLK: { event.type = os_window_event_type_e_mouse_left_dbl_click;  } break;
+                    case WM_RBUTTONDOWN:   { event.type = os_window_event_type_e_mouse_right_down;      } break;
+                    case WM_RBUTTONUP:     { event.type = os_window_event_type_e_mouse_right_up;        } break;
+                    case WM_RBUTTONDBLCLK: { event.type = os_window_event_type_e_mouse_right_dbl_click; } break;
+                    default:               { event.type = os_window_event_type_e_none;                  } break;
+                }
+            }
+
+            // check thread-wide events
+            else {
+                switch (msg.message) {
+              
+                    case (WM_QUIT): { event.type = os_window_event_type_e_quit; } break; 
+                    default: break;
+                }
+            }
+
+            // handle the message
+            (void)TranslateMessage(&msg);
+            (void)DispatchMessage  (&msg);
+        }
+
+        return(true);
+    }
+
     //-------------------------------------------------------------------
     // INTERNAL
     //-------------------------------------------------------------------
@@ -186,19 +264,19 @@ namespace sld {
         const DWORD win32_error = GetLastError();
         switch (win32_error) {
 
-            case (ERROR_FILE_NOT_FOUND):          { _window_last_error.val = os_window_error_e_resource_not_found;     break; } // Resource file (icon/cursor/etc.) not found.
-            case (ERROR_ACCESS_DENIED):           { _window_last_error.val = os_window_error_e_access_denied;          break; } // Operation not permitted (e.g., cross-process window manipulation).
-            case (ERROR_NOT_ENOUGH_MEMORY):       { _window_last_error.val = os_window_error_e_system_out_of_memory;   break; } // System ran out of memory.
-            case (ERROR_OUTOFMEMORY):             { _window_last_error.val = os_window_error_e_general_out_of_memory;  break; } // Out of memory (general resource exhaustion).
-            case (ERROR_INVALID_PARAMETER):       { _window_last_error.val = os_window_error_e_invalid_args;           break; } // Invalid argument/flag passed to an API.
-            case (ERROR_INVALID_WINDOW_HANDLE):   { _window_last_error.val = os_window_error_e_invalid_handle;         break; } // The window handle (HWND) is invalid.
-            case (ERROR_CANNOT_FIND_WND_CLASS):   { _window_last_error.val = os_window_error_e_invalid_class;          break; } // Window class not registered.
-            case (ERROR_CLASS_ALREADY_EXISTS):    { _window_last_error.val = os_window_error_e_class_already_exists;   break; } // Attempted to register an already-registered window class.
-            case (ERROR_DC_NOT_FOUND):            { _window_last_error.val = os_window_error_e_invalid_device_context; break; } // Invalid or already released device context (DC).
-            case (ERROR_INVALID_THREAD_ID):       { _window_last_error.val = os_window_error_e_invalid_thread;         break; } // Thread ID is invalid / has no message queue.
-            case (ERROR_RESOURCE_NAME_NOT_FOUND): { _window_last_error.val = os_window_error_e_invalid_resource;       break; } // Resource (cursor, icon, etc.) not found.
-            case (ERROR_NOT_ENOUGH_QUOTA):        { _window_last_error.val = os_window_error_e_quota_exceeded;         break; } // System/user quota limit exceeded.
-            default:                              { _window_last_error.val = os_window_error_e_unknown;                break; } // General/unknown error
+            case (ERROR_FILE_NOT_FOUND):          { _last_error_window = os_window_error_e_resource_not_found;     break; } // Resource file (icon/cursor/etc.) not found.
+            case (ERROR_ACCESS_DENIED):           { _last_error_window = os_window_error_e_access_denied;          break; } // Operation not permitted (e.g., cross-process window manipulation).
+            case (ERROR_NOT_ENOUGH_MEMORY):       { _last_error_window = os_window_error_e_system_out_of_memory;   break; } // System ran out of memory.
+            case (ERROR_OUTOFMEMORY):             { _last_error_window = os_window_error_e_general_out_of_memory;  break; } // Out of memory (general resource exhaustion).
+            case (ERROR_INVALID_PARAMETER):       { _last_error_window = os_window_error_e_invalid_args;           break; } // Invalid argument/flag passed to an API.
+            case (ERROR_INVALID_WINDOW_HANDLE):   { _last_error_window = os_window_error_e_invalid_handle;         break; } // The window handle (HWND) is invalid.
+            case (ERROR_CANNOT_FIND_WND_CLASS):   { _last_error_window = os_window_error_e_invalid_class;          break; } // Window class not registered.
+            case (ERROR_CLASS_ALREADY_EXISTS):    { _last_error_window = os_window_error_e_class_already_exists;   break; } // Attempted to register an already-registered window class.
+            case (ERROR_DC_NOT_FOUND):            { _last_error_window = os_window_error_e_invalid_device_context; break; } // Invalid or already released device context (DC).
+            case (ERROR_INVALID_THREAD_ID):       { _last_error_window = os_window_error_e_invalid_thread;         break; } // Thread ID is invalid / has no message queue.
+            case (ERROR_RESOURCE_NAME_NOT_FOUND): { _last_error_window = os_window_error_e_invalid_resource;       break; } // Resource (cursor, icon, etc.) not found.
+            case (ERROR_NOT_ENOUGH_QUOTA):        { _last_error_window = os_window_error_e_quota_exceeded;         break; } // System/user quota limit exceeded.
+            default:                              { _last_error_window = os_window_error_e_unknown;                break; } // General/unknown error
         }
     }
 
@@ -206,93 +284,6 @@ namespace sld {
     win32_window_clear_last_error(
         void) {
 
-        _window_last_error.val = os_window_error_e_success;
-    }
-
-    SLD_API_OS_INTERNAL void 
-    win32_window_process_events(
-        os_window_handle* window,
-        os_window_events* update) {
-
-        const HWND window_handle = (HWND)window->val; 
- 
-        win32_window_message_peek_args msg_peek_args;
-        msg_peek_args.filter_min    = 0;
-        msg_peek_args.filter_max    = 0;
-        msg_peek_args.window_handle = window_handle;
-
-        // catch-all to ensure this isn't an infinite loop
-        u32           message_index      = 0;
-        constexpr u32 message_count_max  = 256; 
-
-        for (
-            bool has_message = win32_window_peek_message(msg_peek_args);
-                (has_message == true) && (message_index < message_count_max);
-                 has_message = win32_window_peek_message(msg_peek_args)) {
-
-            // update message index
-            ++message_index;
-
-            // check window-specific events
-            if (msg_peek_args.message.hwnd == window_handle) {
-
-                switch (msg_peek_args.message.message) {
-                    
-                    case WM_KEYDOWN:
-                    case WM_SYSKEYDOWN: {
-
-                        update->events.val |= os_window_event_e_key_down; 
-        
-
-                    } break;
-
-                    case WM_KEYUP:
-                    case WM_SYSKEYUP: {
-                    
-                        update->events.val |= os_window_event_e_key_up;
-                        
-                    } break;
-
-                    case WM_MOVE:          { update->events.val |= os_window_event_e_moved;                 } break;
-                    case WM_SIZE:          { update->events.val |= os_window_event_e_resized;               } break;
-                    case WM_MOUSEMOVE:     { update->events.val |= os_window_event_e_mouse_move;            } break;
-                    case WM_LBUTTONDOWN:   { update->events.val |= os_window_event_e_mouse_left_down;       } break;
-                    case WM_LBUTTONUP:     { update->events.val |= os_window_event_e_mouse_left_up;         } break;
-                    case WM_LBUTTONDBLCLK: { update->events.val |= os_window_event_e_mouse_left_dbl_click;  } break;
-                    case WM_RBUTTONDOWN:   { update->events.val |= os_window_event_e_mouse_right_down;      } break;
-                    case WM_RBUTTONUP:     { update->events.val |= os_window_event_e_mouse_right_up;        } break;
-                    case WM_RBUTTONDBLCLK: { update->events.val |= os_window_event_e_mouse_right_dbl_click; } break;
-                    default: break;
-                }
-            }
-
-            // check thread-wide events
-            else {
-                switch (msg_peek_args.message.message) {
-              
-                    case (WM_QUIT): { update->events.val |= os_window_event_e_quit; } break; 
-                    default: break;
-                }
-            }
-
-            // handle the message
-            (void)TranslateMessage (&msg_peek_args.message);
-            (void)DispatchMessage  (&msg_peek_args.message);
-        }
-    }
-
-    SLD_API_OS_INTERNAL bool
-    win32_window_peek_message(
-        win32_window_message_peek_args& peek_args) {
-
-        const bool result = PeekMessage(
-            &peek_args.message,
-            NULL,
-            peek_args.filter_min,
-            peek_args.filter_min,
-            PM_REMOVE
-        );
-
-        return(result);
+        _last_error_window = os_window_error_e_success;
     }
 };
