@@ -25,8 +25,6 @@
 #define SLD_API_OS_FUNC                     static // os api function
 #define SLD_API_OS_INTERNAL                 static // internal os function
 
-
-
 #ifndef assert
 #   ifdef WIN32
 #       define assert(expr) if(!expr) DebugBreak()
