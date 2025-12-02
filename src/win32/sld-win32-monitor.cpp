@@ -48,7 +48,7 @@ namespace sld {
 
             // copy the win32 info to our structure
             os_monitor_info& monitor_info = enumerator->monitor_info[enumerator->index];            
-            monitor_info.handle.val                    = h_monitor;
+            monitor_info.handle                        = h_monitor;
             monitor_info.index                         = enumerator->index;
             monitor_info.dimensions.pixel_width        = (win32_monitor_info.rcMonitor.right  - win32_monitor_info.rcMonitor.left); 
             monitor_info.dimensions.pixel_height       = (win32_monitor_info.rcMonitor.bottom - win32_monitor_info.rcMonitor.top); 
@@ -67,7 +67,7 @@ namespace sld {
         return(should_enumerate);
     }
 
-    static u32
+    SLD_API_OS_FUNC u32
     win32_monitor_count(
         void) {
 
@@ -75,16 +75,16 @@ namespace sld {
         return(count);
     }
 
-    static void
-    win32_monitor_working_area(
+    SLD_API_OS_FUNC void
+    win32_monitor_get_working_area(
         os_monitor_working_area& monitor_working_area) {
 
         monitor_working_area.virtual_pixel_width  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         monitor_working_area.virtual_pixel_height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
     }
 
-    static void
-    win32_monitor_info(
+    SLD_API_OS_FUNC void
+    win32_monitor_get_info(
         os_monitor_info& monitor_info) {
 
         win32_monitor_enumerator_t enumerator;
@@ -101,8 +101,8 @@ namespace sld {
 
     }
 
-    static os_monitor_handle
-    win32_monitor_primary(
+    SLD_API_OS_FUNC os_monitor_handle
+    win32_monitor_get_primary(
         void) {
 
         POINT        origin    = { 0, 0 };
@@ -111,14 +111,14 @@ namespace sld {
         return(monitor);
     }
 
-    static os_monitor_handle
+    SLD_API_OS_FUNC os_monitor_handle
     win32_monitor_from_point(
         const u32 x,
         const u32 y) {
 
-        LONG     long_x  = *(LONG*)&x;
-        LONG     long_y  = *(LONG*)&y;
-        POINT    point   = { long_x, long_y };
+        LONG     long_x    = *(LONG*)&x;
+        LONG     long_y    = *(LONG*)&y;
+        POINT    point     = { long_x, long_y };
         HMONITOR h_monitor = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
 
         os_monitor_handle monitor = { h_monitor };

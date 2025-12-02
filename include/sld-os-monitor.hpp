@@ -15,7 +15,8 @@ namespace sld {
     // TYPES
     //-------------------------------------------------------------------
 
-    struct os_monitor_handle;
+    using os_monitor_handle = void*;
+
     struct os_monitor_info;
     struct os_monitor_working_area;
     struct os_monitor_screen_size;
@@ -34,8 +35,6 @@ namespace sld {
     //-------------------------------------------------------------------
     // DEFINITIONS
     //-------------------------------------------------------------------
-
-    struct os_monitor_handle : vptr_t { };
 
     struct os_monitor_working_area {
         u32 virtual_pixel_width;
