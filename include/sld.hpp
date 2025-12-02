@@ -18,7 +18,7 @@
 #define SLD_API
 #define SLD_API_INLINE          inline
 #define SLD_API_OS                          
-#define SLD_API_OS_FUNC         static 
+#define SLD_API_OS_FUNC          
 #define SLD_API_OS_INTERNAL     static 
 #define SLD_INLINE              inline
 #define SLD_INTERNAL            static

@@ -3,14 +3,6 @@
 #include <Windows.h>
 #include "sld-os.hpp"
 
-#define win32_system_get_cpu_info          os_system_get_cpu_info
-#define win32_system_get_cpu_cache_info    os_system_get_cpu_cache_info
-#define win32_system_get_memory_info       os_system_get_memory_info
-#define win32_system_time_ms               os_system_time_ms
-#define win32_system_sleep                 os_system_sleep
-#define win32_system_debug_print           os_system_debug_print
-#define win32_system_get_working_directory os_system_get_working_directory
-
 namespace sld {
 
     constexpr u32 WIN32_WORKING_DIRECTORY_SIZE = 32;

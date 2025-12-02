@@ -5,12 +5,6 @@
 #include "sld-cstr.hpp"
 #include <stdio.h>
 
-#define win32_monitor_count            os_monitor_count
-#define win32_monitor_get_working_area os_monitor_get_working_area
-#define win32_monitor_get_info         os_monitor_get_info
-#define win32_monitor_get_primary      os_monitor_get_primary
-#define win32_monitor_from_point       os_monitor_from_point
-
 namespace sld {
 
     struct win32_monitor_enumerator_t {

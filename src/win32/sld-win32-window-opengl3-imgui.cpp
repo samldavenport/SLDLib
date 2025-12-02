@@ -2,6 +2,13 @@
 
 #include "sld-win32.hpp"
 
+extern IMGUI_IMPL_API LRESULT 
+ImGui_ImplWin32_WndProcHandler(
+    HWND   hWnd,
+    UINT   msg,
+    WPARAM wParam,
+    LPARAM lParam);
+
 namespace sld {
 
     //-------------------------------------------------------------------
@@ -167,17 +174,14 @@ namespace sld {
     win32_window_init_imgui(
         HWND window_handle) {
 
-        bool result = true;
-
         // initialize context
         ImGuiContext* imgui_context = IMGUI_CHECKVERSION() ? ImGui::CreateContext() : NULL;  
         if (imgui_context) {
 
-            bool did_init_impl = true;
-
             // initialize win32/opengl methods
-            result &= ImGui_ImplWin32_InitForOpenGL (window_handle);
-            result &= ImGui_ImplOpenGL3_Init        ("#version 330");
+            bool did_init_impl = true;
+            did_init_impl &= ImGui_ImplWin32_InitForOpenGL (window_handle);
+            did_init_impl &= ImGui_ImplOpenGL3_Init        ("#version 330");
 
             if (!did_init_impl) {
                 ImGui::DestroyContext(imgui_context);
@@ -189,8 +193,8 @@ namespace sld {
     }
 
     SLD_API_OS_INTERNAL HGLRC
-    win32_opengl_init(
-        const HDC device_context) {
+    win32_window_init_opengl(
+        HDC device_context) {
 
         //set our preferred format descriptor
         PIXELFORMATDESCRIPTOR preferred_format_descriptor = {0};
@@ -237,7 +241,7 @@ namespace sld {
         return(window_class_ptr);
     }
     
-    LRESULT CALLBACK
+    SLD_API_OS_INTERNAL LRESULT CALLBACK
     win32_window_callback(
         HWND   handle,
         UINT   message,
