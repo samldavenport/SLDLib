@@ -8,5 +8,3 @@
 
 #include "sld-win32.cpp"
 #include "sld-cstr.hpp"
-
-#include "sld-input-keyboard.cpp"

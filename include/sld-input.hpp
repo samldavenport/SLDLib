@@ -3,12 +3,6 @@
 
 #include "sld.hpp"
 
-#ifndef    SLD_INPUT_ARRAY_SIZE_KEYCODE
-#   define SLD_INPUT_ARRAY_SIZE_KEYCODE 8
-#endif
-#ifndef    SLD_INPUT_ARRAY_SIZE_MOUSE 
-#   define SLD_INPUT_ARRAY_SIZE_MOUSE   8
-#endif
 
 namespace sld {
 

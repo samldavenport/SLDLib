@@ -5,20 +5,6 @@
 
 namespace sld {
 
-    //-------------------------------------------------------------------
-    // DECLARATIONS
-    //-------------------------------------------------------------------
-
-    struct win32_window_message_peek_args {
-        HWND window_handle;
-        MSG  message;
-        u32  filter_min;
-        u32  filter_max;
-    };
-    //-------------------------------------------------------------------
-    // OS API
-    //-------------------------------------------------------------------
-
     SLD_API_OS_FUNC os_window_error
     win32_window_get_last_error(
         void) {
@@ -160,7 +146,6 @@ namespace sld {
         }
         return(dialog->did_select);
     }
-
 
     SLD_API_OS_INTERNAL bool 
     win32_window_process_events(
