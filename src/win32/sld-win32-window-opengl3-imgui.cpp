@@ -8,13 +8,6 @@ namespace sld {
     // DECLARATIONS
     //-------------------------------------------------------------------
 
-    extern IMGUI_IMPL_API LRESULT 
-    ImGui_ImplWin32_WndProcHandler(
-        HWND   hWnd,
-        UINT   msg,
-        WPARAM wParam,
-        LPARAM lParam);
-
     LRESULT CALLBACK
     win32_window_callback(
         HWND   handle,
@@ -244,7 +237,7 @@ namespace sld {
         return(window_class_ptr);
     }
     
-    SLD_API_OS_INTERNAL LRESULT CALLBACK
+    LRESULT CALLBACK
     win32_window_callback(
         HWND   handle,
         UINT   message,

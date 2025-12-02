@@ -70,6 +70,13 @@ namespace sld {
 #define win32_window_show                os_window_show
 
 
+extern IMGUI_IMPL_API LRESULT 
+ImGui_ImplWin32_WndProcHandler(
+    HWND   hWnd,
+    UINT   msg,
+    WPARAM wParam,
+    LPARAM lParam);
+
 
 
 #endif //SLD_WIN32_HPP
