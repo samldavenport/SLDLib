@@ -5,7 +5,15 @@
 
 namespace sld {
 
+    //-------------------------------------------------------------------
+    // CONSTANTS
+    //-------------------------------------------------------------------
+
     constexpr u32 OS_MONITOR_NAME_WIDTH = 32;
+
+    //-------------------------------------------------------------------
+    // TYPES
+    //-------------------------------------------------------------------
 
     struct os_monitor_handle;
     struct os_monitor_info;
@@ -13,11 +21,19 @@ namespace sld {
     struct os_monitor_screen_size;
     struct os_monitor_dimensions;
 
-    using os_monitor_count_f            = u32               (*) (void);
-    using os_monitor_get_working_area_f = void              (*) (os_monitor_working_area& monitor_working_area);
-    using os_monitor_get_info_f         = void              (*) (os_monitor_info&         monitor_info);
-    using os_monitor_get_primary_f      = os_monitor_handle (*) (void);
-    using os_monitor_from_point_f       = os_monitor_handle (*) (const u32 x, const u32 y);
+    //-------------------------------------------------------------------
+    // METHODS
+    //-------------------------------------------------------------------
+
+    SLD_API_OS u32               os_monitor_count            (void);
+    SLD_API_OS void              os_monitor_get_working_area (os_monitor_working_area& monitor_working_area);
+    SLD_API_OS void              os_monitor_get_info         (os_monitor_info&         monitor_info);
+    SLD_API_OS os_monitor_handle os_monitor_get_primary      (void);
+    SLD_API_OS os_monitor_handle os_monitor_from_point       (const u32 x, const u32 y);
+
+    //-------------------------------------------------------------------
+    // DEFINITIONS
+    //-------------------------------------------------------------------
 
     struct os_monitor_handle : vptr_t { };
 

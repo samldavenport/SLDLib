@@ -3,48 +3,20 @@
 
 #include "sld.hpp"
 
-#ifndef    SLD_INPUT_ARRAY_SIZE_KEYCODE
-#   define SLD_INPUT_ARRAY_SIZE_KEYCODE 8
-#endif
-#ifndef    SLD_INPUT_ARRAY_SIZE_MOUSE 
-#   define SLD_INPUT_ARRAY_SIZE_MOUSE   8
-#endif
 
 namespace sld {
 
-    constexpr u32 INPUT_ARRAY_SIZE_KEYCODE = SLD_INPUT_ARRAY_SIZE_KEYCODE; 
-    constexpr u32 INPUT_ARRAY_SIZE_MOUSE   = SLD_INPUT_ARRAY_SIZE_MOUSE; 
+    enum input_keycode_e : u16;
 
-    struct input_mouse_t;
-    struct input_keyboard_t;
-    struct input_keycode_t;
-    struct input_gamepad_t;
-    struct input_gamepad_stick_t;
-    struct input_gamepad_triggers_t;
+    using input_keycode = u16;
 
-    SLD_API void input_keyboard_validate     (input_keyboard_t* keyboard);
-    SLD_API void input_keyboard_add_key_down (input_keyboard_t* keyboard, const input_keycode_t keycode);
-    SLD_API void input_keyboard_add_key_up   (input_keyboard_t* keyboard, const input_keycode_t keycode);
-    SLD_API void input_keyboard_reset        (input_keyboard_t* keyboard);
+    struct input_mouse;
+    struct input_keyboard;
+    struct input_gamepad;
+    struct input_gamepad_stick;
+    struct input_gamepad_triggers;
 
-    struct input_keycode_t {
-        u16 val;
-    };
-
-    struct input_keyboard_t {
-        struct {
-            u32 down;
-            u32 up;
-        } key_count;
-        struct {
-            input_keycode_t down [INPUT_ARRAY_SIZE_KEYCODE];       
-            input_keycode_t up   [INPUT_ARRAY_SIZE_KEYCODE];       
-        } keycode_array;
-    };
-
-
-
-    enum input_keycode_e {
+    enum input_keycode_e : u16 {
         
         // control
         input_keycode_e_null         = 0x00,

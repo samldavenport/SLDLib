@@ -13,81 +13,68 @@ namespace sld {
     // CONSTANTS
     //-------------------------------------------------------------------
 
-    constexpr u32 OS_FILE_SIZE_IO      = SLD_OS_FILE_SIZE_IO;
-    constexpr u64 OS_FILE_SIZE_INVALID = 0xFFFFFFFFFFFFFFFF; 
+    constexpr u32   OS_FILE_SIZE_IO        = SLD_OS_FILE_SIZE_IO;
+    constexpr u64   OS_FILE_SIZE_INVALID   = 0xFFFFFFFFFFFFFFFF; 
+    constexpr void* OS_FILE_HANDLE_INVALID = NULL;
 
     //-------------------------------------------------------------------
     // TYPES
     //-------------------------------------------------------------------
 
+    enum os_file_error_e       : s32;
     enum os_file_access_flag_e : u32;
     enum os_file_share_flag_e  : u32;
     enum os_file_mode_e        : u32;
     enum os_file_async_state_e : u32;
-    enum os_file_error_e       : s32;
 
-    struct os_file_handle;
+    using os_file_handle       = void*;
+    using os_file_map_handle   = void*;
+    using os_file_error        = s32;
+    using os_file_access_flags = u32;
+    using os_file_share_flags  = u32;
+    using os_file_mode         = u32;
+    using os_file_async_state  = u32;
+
     struct os_file_config;
     struct os_file_async;
     struct os_file_buffer;
     struct os_file_mapped_buffer;
-    struct os_file_access_flags;
-    struct os_file_share_flags;
-    struct os_file_error;
-    struct os_file_mode;
-    struct os_file_async_state;
-    struct os_file_map_handle;
 
     //-------------------------------------------------------------------
-    // API
+    // METHODS
     //-------------------------------------------------------------------
 
     // error
-    using os_file_get_last_error_f        = os_file_error (*) (void);
+    SLD_API_OS os_file_error os_file_get_last_error        (void);
 
     // file
-    using os_file_open_f                  = bool (*) (os_file_handle* file_hnd, const os_file_config* config, const cchar* path);
-    using os_file_close_f                 = bool (*) (os_file_handle* file_hnd);
-    using os_file_get_size_f              = u64  (*) (os_file_handle* file_hnd);
-    using os_file_read_f                  = u64  (*) (os_file_handle* file_hnd, os_file_buffer* buffer);
-    using os_file_write_f                 = u64  (*) (os_file_handle* file_hnd, os_file_buffer* buffer);
+    SLD_API_OS os_file_handle os_file_open                  (const os_file_config* config);
+    SLD_API_OS bool           os_file_close                 (const os_file_handle file_hnd);
+    SLD_API_OS u64            os_file_get_size              (const os_file_handle file_hnd);
+    SLD_API_OS u64            os_file_read                  (const os_file_handle file_hnd, os_file_buffer* buffer);
+    SLD_API_OS u64            os_file_write                 (const os_file_handle file_hnd, os_file_buffer* buffer);
 
     // async
-    using os_file_async_create_f          = bool (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_destroy_f         = bool (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_get_result        = u64  (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_wait_f            = u64  (*) (os_file_handle* file_hnd, os_file_async* async);      
-    using os_file_async_cancel_f          = bool (*) (os_file_handle* file_hnd, os_file_async* async);
-    using os_file_async_read_f            = bool (*) (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
-    using os_file_async_write_f           = bool (*) (os_file_handle* file_hnd, os_file_async* async, os_file_buffer* buffer);    
+    SLD_API_OS bool           os_file_async_create          (const os_file_handle file_hnd, os_file_async* async);
+    SLD_API_OS bool           os_file_async_destroy         (const os_file_handle file_hnd, os_file_async* async);
+    SLD_API_OS u64            os_file_async_get_result      (const os_file_handle file_hnd, os_file_async* async);
+    SLD_API_OS u64            os_file_async_wait            (const os_file_handle file_hnd, os_file_async* async);      
+    SLD_API_OS bool           os_file_async_cancel          (const os_file_handle file_hnd, os_file_async* async);
+    SLD_API_OS bool           os_file_async_read            (const os_file_handle file_hnd, os_file_async* async, os_file_buffer* buffer);    
+    SLD_API_OS bool           os_file_async_write           (const os_file_handle file_hnd, os_file_async* async, os_file_buffer* buffer);    
 
     // buffer
-    using os_file_mapped_buffer_create_f  = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    using os_file_mapped_buffer_destroy_f = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    using os_file_mapped_buffer_read_f    = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    using os_file_mapped_buffer_write_f   = bool (*) (os_file_handle* file_hnd, os_file_map_handle* map_hnd, os_file_buffer* buffer);
-    
+    SLD_API_OS bool           os_file_mapped_buffer_create  (const os_file_handle file_hnd, os_file_mapped_buffer* mapped_buffer);
+    SLD_API_OS bool           os_file_mapped_buffer_destroy (const os_file_handle file_hnd, os_file_mapped_buffer* mapped_buffer);
+    SLD_API_OS bool           os_file_mapped_buffer_read    (const os_file_handle file_hnd, os_file_mapped_buffer* mapped_buffer);
+    SLD_API_OS bool           os_file_mapped_buffer_write   (const os_file_handle file_hnd, os_file_mapped_buffer* mapped_buffer);
 
     //-------------------------------------------------------------------
     // DEFINITIONS
     //-------------------------------------------------------------------
 
-    struct os_file_error        : s32_t { }; 
-    struct os_file_access_flags : u32_t { };
-    struct os_file_share_flags  : u32_t { };
-    struct os_file_mode         : u32_t { }; 
-    struct os_file_async_state  : u32_t { }; 
-    
-    struct os_file_handle {
-        vptr val;
-    };
-
-    struct os_file_map_handle {
-        vptr val;
-    };
-
     struct os_file_async {
-        os_file_async_state state;
+        os_file_async_state   state;
         u32                   timeout_ms;
         byte                  data[SLD_OS_FILE_SIZE_IO];                 
     };
@@ -100,10 +87,19 @@ namespace sld {
     };
 
     struct os_file_config {
+        cchar*               path;
         os_file_mode         mode;
         os_file_access_flags access_flags;
         os_file_share_flags  share_flags;
         bool                 is_async;
+    };
+
+    struct os_file_mapped_buffer {
+        os_file_map_handle map_handle;        
+        byte*              data;
+        u64                size;
+        u64                offset;
+        u64                cursor;
     };
 
     //-------------------------------------------------------------------
@@ -111,32 +107,28 @@ namespace sld {
     //-------------------------------------------------------------------
 
     enum os_file_access_flag_e : u32 {
-        os_file_access_flag_e_none  = 0,        
-        os_file_access_flag_e_read  = bit_value(0),        
-        os_file_access_flag_e_write = bit_value(1)
+        os_file_access_flag_e_none          = 0,        
+        os_file_access_flag_e_read          = bit_value(0),        
+        os_file_access_flag_e_write         = bit_value(1)
     };
-
     enum os_file_share_flag_e : u32 {
-        os_file_share_flag_e_none   = 0 ,
-        os_file_share_flag_e_read   = bit_value(0),
-        os_file_share_flag_e_write  = bit_value(1),
-        os_file_share_flag_e_delete = bit_value(2)
+        os_file_share_flag_e_none           = 0,
+        os_file_share_flag_e_read           = bit_value(0),
+        os_file_share_flag_e_write          = bit_value(1),
+        os_file_share_flag_e_delete         = bit_value(2)
     };
-
     enum os_file_mode_e : u32 {
-        os_file_mode_e_create_new         = 0, 
-        os_file_mode_e_open_existing      = 1, 
-        os_file_mode_e_open_always        = 2, 
-        os_file_mode_e_overwrite_existing = 3 
+        os_file_mode_e_create_new           = 0, 
+        os_file_mode_e_open_existing        = 1, 
+        os_file_mode_e_open_always          = 2, 
+        os_file_mode_e_overwrite_existing   = 3 
     };
-
     enum os_file_async_state_e : u32 {
-        os_file_async_state_e_success = 0,
-        os_file_async_state_e_error   = 1,
-        os_file_async_state_e_pending = 2,
-        os_file_async_state_e_timeout = 3
+        os_file_async_state_e_success       = 0,
+        os_file_async_state_e_error         = 1,
+        os_file_async_state_e_pending       = 2,
+        os_file_async_state_e_timeout       = 3
     };
-
     enum os_file_error_e : s32 {
         os_file_error_e_success             =  1,
         os_file_error_e_unknown             = -1,

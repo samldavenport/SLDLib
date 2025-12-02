@@ -7,7 +7,6 @@ namespace sld {
 
     constexpr u32 WIN32_WORKING_DIRECTORY_SIZE = 32;
 
-
     SLD_API_OS_FUNC void
     win32_system_get_cpu_info(
         os_system_cpu_info& cpu_info) {

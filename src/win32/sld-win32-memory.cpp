@@ -36,7 +36,7 @@ namespace sld {
         return(is_free);
     }
 
-    SLD_API_OS_FUNC void*
+    void*
     win32_memory_reserve(
         void*     start,
         const u64 size) {

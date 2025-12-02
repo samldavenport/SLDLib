@@ -1,6 +1,8 @@
 #ifndef SLD_HPP
 #define SLD_HPP
 
+// TODO(SAM): platform and graphics specific stuff should be moved out of here
+
 #include <Windows.h>
 
 #include <cstdint>
@@ -14,12 +16,13 @@
 #include <GL/glext.h>
 
 #define SLD_API
+#define SLD_API_INLINE          inline
+#define SLD_API_OS                          
+#define SLD_API_OS_FUNC          
+#define SLD_API_OS_INTERNAL     static 
 #define SLD_INLINE              inline
-#define SLD_INTERNAL_INLINE     static inline
 #define SLD_INTERNAL            static
 #define SLD_GLOBAL              static
-#define SLD_API_INLINE          inline
-#define SLD_API_INLINE_TEMPLATE template<typename type> inline
 #define SLD_UTILITY             static constexpr
 
 #ifndef assert

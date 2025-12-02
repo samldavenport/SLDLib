@@ -4,6 +4,7 @@
 #include "sld-os.hpp"
 #include "sld-cstr.hpp"
 #include <stdio.h>
+
 namespace sld {
 
     struct win32_monitor_enumerator_t {
