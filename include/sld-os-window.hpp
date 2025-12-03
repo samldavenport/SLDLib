@@ -46,11 +46,11 @@ namespace sld {
     SLD_API_OS os_window_error os_window_get_last_error   (void);
 
     // graphics/gui specific
-    SLD_API_OS bool            os_window_create           (const os_window_handle window, const os_window_config*   config);
-    SLD_API_OS bool            os_window_set_viewport     (const os_window_handle window, const os_window_viewport* viewport); 
-    SLD_API_OS bool            os_window_set_clear_color  (const os_window_handle window, const os_window_color*    color);
-    SLD_API_OS bool            os_window_frame_start      (const os_window_handle window);
-    SLD_API_OS bool            os_window_frame_render     (const os_window_handle window);
+    SLD_API_OS os_window_handle os_window_create           (const os_window_config*   config);
+    SLD_API_OS bool             os_window_set_viewport     (const os_window_handle window, const os_window_viewport* viewport); 
+    SLD_API_OS bool             os_window_set_clear_color  (const os_window_handle window, const os_window_color*    color);
+    SLD_API_OS bool             os_window_frame_start      (const os_window_handle window);
+    SLD_API_OS bool             os_window_frame_render     (const os_window_handle window);
 
     // common    
     SLD_API_OS bool            os_window_process_events   (const os_window_handle window, os_window_event_list*     event_list);
