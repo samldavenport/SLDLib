@@ -27,18 +27,14 @@ namespace sld {
         const os_window_handle window) {
 
         assert(window);
-        win32_window_clear_last_error();
 
+        constexpr s32 cmd_show_true  = 1;
+        const auto    window_handle  = (HWND)window;
 
-        static const s32 cmd_show_true  = 1;
-        const auto       window_handle  = (HWND)window;
-        const bool       result         = ShowWindow(window_handle, cmd_show_true);
+        // we don't need the value from show window
+        (void)ShowWindow(window_handle, cmd_show_true);
 
-        if (!result) {
-            win32_window_set_last_error();
-        }
-
-        return(result);
+        return(true);
     }
 
     SLD_API_OS_FUNC bool
