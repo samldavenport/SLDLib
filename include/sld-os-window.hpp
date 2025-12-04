@@ -28,7 +28,7 @@ namespace sld {
     using os_window_keycode          = input_keycode;
 
     struct os_window_size;
-    struct os_window_pos;
+    struct os_window_position;
     struct os_window_config;
     struct os_window_color;
     struct os_window_event;
@@ -53,11 +53,11 @@ namespace sld {
     SLD_API_OS bool             os_window_frame_render     (const os_window_handle window);
 
     // common    
-    SLD_API_OS bool            os_window_process_events   (const os_window_handle window, os_window_event_list*     event_list);
-    SLD_API_OS bool            os_window_get_size         (const os_window_handle window, os_window_size*           size);
-    SLD_API_OS bool            os_window_get_position     (const os_window_handle window, os_window_pos*            position);
-    SLD_API_OS bool            os_window_open_file_dialog (const os_window_handle window, os_window_dialog*         dialog);
-    SLD_API_OS bool            os_window_save_file_dialog (const os_window_handle window, os_window_dialog*         dialog);
+    SLD_API_OS bool            os_window_process_events   (const os_window_handle window, os_window_event_list* event_list);
+    SLD_API_OS bool            os_window_get_size         (const os_window_handle window, os_window_size*       size);
+    SLD_API_OS bool            os_window_get_position     (const os_window_handle window, os_window_position*   position);
+    SLD_API_OS bool            os_window_open_file_dialog (const os_window_handle window, os_window_dialog*     dialog);
+    SLD_API_OS bool            os_window_save_file_dialog (const os_window_handle window, os_window_dialog*     dialog);
     SLD_API_OS bool            os_window_destroy          (const os_window_handle window);
     SLD_API_OS bool            os_window_show             (const os_window_handle window);
 

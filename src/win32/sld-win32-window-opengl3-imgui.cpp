@@ -111,16 +111,16 @@ namespace sld {
 
     SLD_API_OS_FUNC bool 
     win32_window_set_clear_color(
-        const os_window_handle*      window,
-        const os_window_color* color) {
+        const os_window_handle window,
+        const os_window_color*  color) {
 
         assert(window != NULL && color != NULL);
 
-        constexpr f32 normal_factor = (1/255);
-        const     f32 normal_r      = normal_factor * color->r;
-        const     f32 normal_g      = normal_factor * color->g;
-        const     f32 normal_b      = normal_factor * color->b;
-        const     f32 normal_a      = normal_factor * color->a;
+        constexpr f32 normal_factor = (1.0f/255.0f);
+        const     f32 normal_r      = normal_factor * ((f32)color->r);
+        const     f32 normal_g      = normal_factor * ((f32)color->g);
+        const     f32 normal_b      = normal_factor * ((f32)color->b);
+        const     f32 normal_a      = normal_factor * ((f32)color->a);
 
         glClearColor(
             normal_r,

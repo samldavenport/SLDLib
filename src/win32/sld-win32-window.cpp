@@ -81,7 +81,7 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_open_file_dialog(
-        os_window_handle*             window,
+        os_window_handle             window,
         os_window_dialog*      dialog) {
 
         // initialize the dialog
