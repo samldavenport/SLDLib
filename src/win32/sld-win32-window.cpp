@@ -176,7 +176,6 @@ namespace sld {
 
             // cache the event and update the count
             os_window_event& event = event_list->array[event_list->count];
-            ++event_list->count;
 
             // check window-specific events
             if (msg.hwnd == window) {
