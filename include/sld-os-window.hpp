@@ -139,7 +139,7 @@ namespace sld {
         os_window_gui_context_e_imgui                = 1
     };
     enum os_window_event_type_e {
-        os_window_event_type_e_none                  = 0,
+        os_window_event_type_e_unknown               = 0,
         os_window_event_type_e_quit                  = 1,
         os_window_event_type_e_destroyed             = 2,
         os_window_event_type_e_moved                 = 3,

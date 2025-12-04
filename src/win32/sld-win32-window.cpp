@@ -212,7 +212,7 @@ namespace sld {
                     case WM_RBUTTONDOWN:   { event.type = os_window_event_type_e_mouse_right_down;      } break;
                     case WM_RBUTTONUP:     { event.type = os_window_event_type_e_mouse_right_up;        } break;
                     case WM_RBUTTONDBLCLK: { event.type = os_window_event_type_e_mouse_right_dbl_click; } break;
-                    default:               { event.type = os_window_event_type_e_none;                  } break;
+                    default:               { event.type = os_window_event_type_e_unknown;               } break;
                 }
             }
 
