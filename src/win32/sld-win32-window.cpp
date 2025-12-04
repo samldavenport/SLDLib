@@ -39,8 +39,8 @@ namespace sld {
 
     SLD_API_OS_FUNC bool
     win32_window_get_size(
-        os_window_handle*      window,
-        os_window_size* size) {
+        const os_window_handle window,
+        os_window_size*        size) {
         
         assert(window != NULL && size != NULL);
         win32_window_clear_last_error();
@@ -143,7 +143,7 @@ namespace sld {
         return(dialog->did_select);
     }
 
-    SLD_API_OS_INTERNAL bool 
+    SLD_API_OS_FUNC bool 
     win32_window_process_events(
         const os_window_handle window,
         os_window_event_list*  event_list) {
