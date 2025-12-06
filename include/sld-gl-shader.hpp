@@ -324,7 +324,7 @@ namespace sld {
 
         const void*     attribute_pointer       = (void*)attribute_offset;  
         const GLenum    attribute_type          = GL_INT;
-        const GLBoolean attribute_is_normalized = GL_FALSE;
+        const GLboolean attribute_is_normalized = GL_FALSE;
 
         glVertexAttribPointer(
             attribute_index,
@@ -339,12 +339,105 @@ namespace sld {
         return(error == GL_NO_ERROR);  
     }
 
-    SLD_API_INLINE bool                  gl_vertex_attribute_define_u32      (const u32 attribute_index, const u32 attribute_offset, const u32 attribute_count, const u32 vertex_size);
-    SLD_API_INLINE bool                  gl_vertex_attribute_define_f32      (const u32 attribute_index, const u32 attribute_offset, const u32 attribute_count, const u32 vertex_size);
-    SLD_API_INLINE bool                  gl_vertex_attribute_define_vec2     (const u32 attribute_index, const u32 attribute_offset, const u32 attribute_count, const u32 vertex_size);
-    SLD_API_INLINE bool                  gl_vertex_attribute_define_vec3     (const u32 attribute_index, const u32 attribute_offset, const u32 attribute_count, const u32 vertex_size);
-    SLD_API_INLINE bool                  gl_vertex_attribute_define_mat3     (const u32 attribute_index, const u32 attribute_offset, const u32 attribute_count, const u32 vertex_size);
-    SLD_API_INLINE bool                  gl_vertex_attribute_define_mat4     (const u32 attribute_index, const u32 attribute_offset, const u32 attribute_count, const u32 vertex_size);
+    SLD_API_INLINE bool
+    gl_vertex_attribute_define_u32(
+        const u32 attribute_index,
+        const u32 attribute_offset,
+        const u32 attribute_count,
+        const u32 vertex_size) {
+
+        const void*     attribute_pointer       = (void*)attribute_offset;  
+        const GLenum    attribute_type          = GL_UNSIGNED_INT;
+        const GLboolean attribute_is_normalized = GL_FALSE;
+
+        glVertexAttribPointer(
+            attribute_index,
+            attribute_count,
+            attribute_type,
+            attribute_is_normalized,
+            vertex_size,
+            attribute_pointer
+        );
+
+        const GLenum error = glGetError();
+        return(error == GL_NO_ERROR);  
+    }
+
+    SLD_API_INLINE bool
+    gl_vertex_attribute_define_f32(
+        const u32 attribute_index,
+        const u32 attribute_offset,
+        const u32 attribute_count,
+        const u32 vertex_size) {
+        
+        const void*     attribute_pointer       = (void*)attribute_offset;  
+        const GLenum    attribute_type          = GL_FLOAT;
+        const GLboolean attribute_is_normalized = GL_FALSE;
+
+        glVertexAttribPointer(
+            attribute_index,
+            attribute_count,
+            attribute_type,
+            attribute_is_normalized,
+            vertex_size,
+            attribute_pointer
+        );
+
+        const GLenum error = glGetError();
+        return(error == GL_NO_ERROR);  
+    }
+
+    SLD_API_INLINE bool
+    gl_vertex_attribute_define_vec2(
+        const u32 attribute_index,
+        const u32 attribute_offset,
+        const u32 attribute_count,
+        const u32 vertex_size) {
+    
+        const void*     attribute_pointer       = (void*)attribute_offset;  
+        const GLenum    attribute_type          = GL_FLOAT;
+        const GLboolean attribute_is_normalized = GL_VECTOR;
+
+        glVertexAttribPointer(
+            attribute_index,
+            attribute_count,
+            attribute_type,
+            attribute_is_normalized,
+            vertex_size,
+            attribute_pointer
+        );
+
+        const GLenum error = glGetError();
+        return(error == GL_NO_ERROR);  
+    }
+
+    SLD_API_INLINE bool
+    gl_vertex_attribute_define_vec3(
+        const u32 attribute_index,
+        const u32 attribute_offset,
+        const u32 attribute_count,
+        const u32 vertex_size) {
+    
+    }
+
+    SLD_API_INLINE bool
+    gl_vertex_attribute_define_mat3(
+        const u32 attribute_index,
+        const u32 attribute_offset,
+        const u32 attribute_count,
+        const u32 vertex_size) {
+    
+    }
+
+    SLD_API_INLINE bool
+    gl_vertex_attribute_define_mat4(
+        const u32 attribute_index,
+        const u32 attribute_offset,
+        const u32 attribute_count,
+        const u32 vertex_size) {
+    
+    }
+
     
     SLD_API_INLINE bool
     gl_vertex_attribute_enable(
