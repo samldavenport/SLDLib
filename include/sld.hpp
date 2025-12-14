@@ -32,6 +32,8 @@
 #       define assert(expr) if(!expr) *(int*)(NULL)=1
 #   endif
 #endif
+#define nop   assert(true)
+#define panic assert(false)
 
 namespace sld {
 

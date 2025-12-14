@@ -10,44 +10,44 @@ namespace sld {
     //-------------------------------------------------------------------
     // TYPES
     //-------------------------------------------------------------------
-    
-    using gl_error        = GLint;
-    using gl_uniform      = GLint;
-    using gl_status       = GLint; 
-    using gl_shader       = GLuint;
-    using gl_shader_stage = GLuint;
-    using gl_vertex       = GLuint; 
-    using gl_attribute    = GLuint; 
-    using gl_buffer       = GLuint;
+     
+    using gl_error          = GLint;
+    using gl_uniform        = GLint;
+    using gl_status         = GLint; 
+    using gl_shader_program = GLuint;
+    using gl_shader_stage   = GLuint;
+    using gl_vertex         = GLuint; 
+    using gl_attribute      = GLuint; 
+    using gl_buffer         = GLuint;
 
     //-------------------------------------------------------------------
     // CONSTANTS
     //-------------------------------------------------------------------
 
-    constexpr gl_error        GL_ERROR_SUCCESS        = 0; 
-    constexpr gl_shader       GL_SHADER_INVALID       = 0xFFFFFFFF;
-    constexpr gl_shader_stage GL_SHADER_STAGE_INVALID = 0xFFFFFFFF;
-    constexpr gl_uniform      GL_UNIFORM_INVALID      = -1;
-    constexpr gl_vertex       GL_VERTEX_INVALID       = -1;
-    constexpr gl_buffer       GL_BUFFER_INVALID       = -1;
+    constexpr gl_error          GL_ERROR_SUCCESS          = 0; 
+    constexpr gl_shader_program GL_SHADER_PROGRAM_INVALID = 0xFFFFFFFF;
+    constexpr gl_shader_stage   GL_SHADER_STAGE_INVALID   = 0xFFFFFFFF;
+    constexpr gl_uniform        GL_UNIFORM_INVALID        = -1;
+    constexpr gl_vertex         GL_VERTEX_INVALID         = -1;
+    constexpr gl_buffer         GL_BUFFER_INVALID         = -1;
 
     //-------------------------------------------------------------------
     // METHODS
     //-------------------------------------------------------------------
 
     // shader
-    SLD_API_INLINE void gl_shader_create                (gl_shader& shader,       gl_error& error);
-    SLD_API_INLINE void gl_shader_destroy               (gl_shader& shader,       gl_error& error, gl_status& status);
-    SLD_API_INLINE void gl_shader_link                  (gl_shader& shader,       gl_error& error, gl_status& status);
-    SLD_API_INLINE void gl_shader_set_active            (gl_shader& shader,       gl_error& error);
-    SLD_API_INLINE void gl_shader_attach_stage          (gl_shader& shader,       gl_error& error, gl_shader_stage& stage);
-    SLD_API_INLINE void gl_shader_get_uniform           (gl_shader& shader,       gl_error& error, gl_uniform& uniform, const cchar* name);
+    SLD_API_INLINE void gl_shader_program_create         (gl_shader_program& program,       gl_error& error);
+    SLD_API_INLINE void gl_shader_program_destroy        (gl_shader_program& program,       gl_error& error, gl_status& status);
+    SLD_API_INLINE void gl_shader_program_link           (gl_shader_program& program,       gl_error& error, gl_status& status);
+    SLD_API_INLINE void gl_shader_program_set_active     (gl_shader_program& program,       gl_error& error);
+    SLD_API_INLINE void gl_shader_program_attach_stage   (gl_shader_program& program,       gl_error& error, gl_shader_stage& stage);
+    SLD_API_INLINE void gl_shader_program_get_uniform    (gl_shader_program& program,       gl_error& error, gl_uniform& uniform, const cchar* name);
 
     // stage
     SLD_API_INLINE void gl_shader_stage_create_vertex   (gl_shader_stage& stage,  gl_error& error);
     SLD_API_INLINE void gl_shader_stage_create_fragment (gl_shader_stage& stage,  gl_error& error);
     SLD_API_INLINE void gl_shader_stage_destroy         (gl_shader_stage& stage,  gl_error& error);
-    SLD_API_INLINE void gl_shader_stage_compile         (gl_shader_stage& stage,  gl_error& error, const cchar* buffer);
+    SLD_API_INLINE void gl_shader_stage_compile         (gl_shader_stage& stage,  gl_error& error, gl_status& status, const cchar* buffer);
 
     // uniform
     SLD_API_INLINE void gl_uniform_set_s32              (gl_uniform& uniform,     gl_error& error, s32&  value);
@@ -78,22 +78,22 @@ namespace sld {
     //-------------------------------------------------------------------
 
     SLD_API_INLINE void
-    gl_shader_create(
-        gl_shader& shader,
-        gl_error&  error) {
+    gl_shader_program_create(
+        gl_shader_program& program,
+        gl_error&          error) {
 
-        shader = glCreateProgram ();
-        error  = glGetError      (); 
+        program = glCreateProgram ();
+        error   = glGetError      (); 
     }
 
     SLD_API_INLINE bool
-    gl_shader_destroy(
-        gl_shader& shader,
-        gl_error&  error,
-        gl_status& status) {
+    gl_shader_program_destroy(
+        gl_shader_program& program,
+        gl_error&          error,
+        gl_status&         status) {
         
-        glDeleteProgram (shader);
-        glGetProgramiv  (shader, GL_DELETE_STATUS, &status);
+        glDeleteProgram (program);
+        glGetProgramiv  (program, GL_DELETE_STATUS, &status);
 
         error = (status == GL_TRUE)
             ? GL_ERROR_SUCCESS
@@ -101,13 +101,13 @@ namespace sld {
     }
 
     SLD_API_INLINE void
-    gl_shader_link(
-        gl_shader& shader,
-        gl_error&  error,
-        gl_status& status) {
+    gl_shader_program_link(
+        gl_shader_program& program,
+        gl_error&          error,
+        gl_status&         status) {
 
-        glLinkProgram  (shader);
-        glGetProgramiv (shader, GL_LINK_STATUS, &status);
+        glLinkProgram  (program);
+        glGetProgramiv (program, GL_LINK_STATUS, &status);
 
         error = (status == GL_TRUE)
             ? GL_ERROR_SUCCESS
@@ -115,33 +115,33 @@ namespace sld {
     }
 
     SLD_API_INLINE void
-    gl_shader_set_active(
-        gl_shader& shader,
-        gl_error&  error) {
+    gl_shader_program_set_active(
+        gl_shader_program& program,
+        gl_error&          error) {
 
-        glUseProgram(shader);
+        glUseProgram(program);
         error = glGetError();
     }
 
     SLD_API_INLINE void
-    gl_shader_attach_stage(
-        gl_shader& shader,
-        gl_error&  error) {
+    gl_shader_program_attach_stage(
+        gl_shader_program& program,
+        gl_error&          error) {
 
-        glAttachShader(shader, stage);
+        glAttachShader(program, stage);
         error = glGetError();
     }
 
     SLD_API_INLINE void 
-    gl_shader_get_uniform(
-        gl_shader&   shader,
-        gl_error&    error,
-        gl_uniform&  uniform,
-        const cchar* name) {
+    gl_shader_program_get_uniform(
+        gl_shader_program& program,
+        gl_error&          error,
+        gl_uniform&        uniform,
+        const cchar*       name) {
  
         assert(name != NULL);
 
-        uniform = glGetUniformLocation(shader, name);
+        uniform = glGetUniformLocation(program, name);
         error   = glGetError();
     }
 
