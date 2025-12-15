@@ -120,13 +120,13 @@ namespace sld {
             write_overlapped
         );
 
-        async->state = os_file_async_state_e_success;
+        async->state = os_file_async_state_success;
         if (!did_read) {
 
             win32_file_set_last_error();
-            async->state = (_last_error_file == os_file_error_e_io_pending)
-                ? os_file_async_state_e_pending  
-                : os_file_async_state_e_error;
+            async->state = (_last_error_file == os_file_error_io_pending)
+                ? os_file_async_state_pending  
+                : os_file_async_state_error;
         }
         return(did_read);
     }
@@ -153,9 +153,9 @@ namespace sld {
 
         if (!overlapped_result) {
             win32_file_set_last_error();
-            async->state = (_last_error_file == os_file_error_e_io_pending)
-                ? os_file_async_state_e_pending  
-                : os_file_async_state_e_error;
+            async->state = (_last_error_file == os_file_error_io_pending)
+                ? os_file_async_state_pending  
+                : os_file_async_state_error;
             overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
         }
         return(overlapped_bytes_transferred);
@@ -193,12 +193,12 @@ namespace sld {
                     &overlapped_bytes_transferred,
                     overlapped_wait
                 );
-                async->state = os_file_async_state_e_success;
+                async->state = os_file_async_state_success;
 
                 if (!overlapped_result) {
                     win32_file_set_last_error();
                     overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
-                    async->state = os_file_async_state_e_error;
+                    async->state = os_file_async_state_error;
                 }
             } break;
 
@@ -206,14 +206,14 @@ namespace sld {
             case (WAIT_TIMEOUT): {
                 win32_file_set_last_error();
                 overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
-                async->state             = os_file_async_state_e_timeout;
+                async->state             = os_file_async_state_timeout;
             } break;
 
             // io error
             default: {
                 win32_file_set_last_error();
                 overlapped_bytes_transferred = OS_FILE_SIZE_INVALID;
-                async->state             = os_file_async_state_e_error;
+                async->state             = os_file_async_state_error;
             } break;
         }
 
@@ -236,10 +236,10 @@ namespace sld {
             overlapped
         );
 
-        async->state = os_file_async_state_e_success;
+        async->state = os_file_async_state_success;
         if (!did_cancel) {
             win32_file_set_last_error();
-            async->state = os_file_async_state_e_error;
+            async->state = os_file_async_state_error;
         }
         return(did_cancel);
     }

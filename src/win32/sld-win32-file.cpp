@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include "sld-os.hpp"
+#include "sld.hpp"
 
 namespace sld {
 
@@ -13,7 +14,11 @@ namespace sld {
     win32_file_open(
         const os_file_config* config) {
 
-        assert(config);
+        constexpr u32 create_mode_count = 4;
+        assert(
+            config && 
+            config->mode < create_mode_count
+        );
         win32_file_clear_last_error();
 
         LPSECURITY_ATTRIBUTES security        = NULL;
@@ -24,31 +29,25 @@ namespace sld {
         DWORD                 flags           = FILE_ATTRIBUTE_NORMAL;
 
         // access
-        const bool access_read  = (config->access_flags & os_file_access_flag_e_read);
-        const bool access_write = (config->access_flags & os_file_access_flag_e_write);
-        if (access_read)  access |= GENERIC_READ;
-        if (access_write) access |= GENERIC_WRITE;
+        access |= (config->access_flags.test(os_file_access_flag_read))  ? GENERIC_READ  : 0;
+        access |= (config->access_flags.test(os_file_access_flag_write)) ? GENERIC_WRITE : 0;
 
         // share        
-        const bool share_read   = (config->share_flags & os_file_share_flag_e_read);
-        const bool share_write  = (config->share_flags & os_file_share_flag_e_write);
-        const bool share_delete = (config->share_flags & os_file_share_flag_e_delete);
-        if (share_read)   share |= FILE_SHARE_READ;
-        if (share_write)  share |= FILE_SHARE_WRITE;
-        if (share_delete) share |= FILE_SHARE_DELETE;
+        share |= (config->share_flags.test(os_file_share_flag_read))   ? FILE_SHARE_READ   : 0;
+        share |= (config->share_flags.test(os_file_share_flag_write))  ? FILE_SHARE_WRITE  : 0;
+        share |= (config->share_flags.test(os_file_share_flag_delete)) ? FILE_SHARE_DELETE : 0;
 
         // mode
-        switch (config->mode) {
-            case(os_file_mode_e_create_new):         mode = CREATE_NEW;    break;
-            case(os_file_mode_e_open_existing):      mode = OPEN_EXISTING; break;
-            case(os_file_mode_e_open_always):        mode = OPEN_ALWAYS;   break;
-            case(os_file_mode_e_overwrite_existing): mode = CREATE_ALWAYS; break;
-            default:                                 mode = CREATE_NEW;    break;
-        }
+        constexpr DWORD create_mode_array[create_mode_count] = {
+            CREATE_NEW,    // os_file_mode_create_new 
+            OPEN_EXISTING, // os_file_mode_open_existing
+            OPEN_ALWAYS,   // os_file_mode_open_always
+            CREATE_ALWAYS  // os_file_mode_overwrite_existing
+        };
+        mode = create_mode_array[config->mode];
 
-        if (config->is_async) {
-            flags |= FILE_FLAG_OVERLAPPED;
-        }
+        // overlapped / async
+        flags |= config->is_async ? FILE_FLAG_OVERLAPPED : 0;  
 
         // create file
         HANDLE win32_handle = CreateFile(

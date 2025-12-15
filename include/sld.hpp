@@ -133,14 +133,15 @@ namespace sld {
     //-------------------------------------------------------------------
 
     struct flags {
+
         u32 val;
 
-        SLD_API_INLINE void set    (const u32 mask) { val |=  mask;             }
-        SLD_API_INLINE void clear  (const u32 mask) { val &= ~mask;             }
-        SLD_API_INLINE void toggle (const u32 mask) { val ^=  mask;             }
-        SLD_API_INLINE bool test   (const u32 mask) { return((val & mask) > 0); }
+        public:
+        SLD_API_INLINE void set    (const u32 mask)       { val |=  mask;              }
+        SLD_API_INLINE void clear  (const u32 mask)       { val &= ~mask;              }
+        SLD_API_INLINE void toggle (const u32 mask)       { val ^=  mask;              }
+        SLD_API_INLINE bool test   (const u32 mask) const { return((val & mask) != 0); }
     };
-
 };
 
 #endif //SLD_HPP
