@@ -12,7 +12,7 @@ namespace sld {
                 f32 x;
                 f32 y;
             };
-            buffer[2];
+            f32 buffer[2];
         };
     };
 
@@ -23,7 +23,7 @@ namespace sld {
                 f32 y;
                 f32 z;
             };
-            buffer[3];
+            f32 buffer[3];
         };
     };
 };
