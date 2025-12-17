@@ -24,12 +24,12 @@ namespace sld {
     // CONSTANTS
     //-------------------------------------------------------------------
 
-    constexpr gl_error   GL_ERROR_SUCCESS          = 0; 
+    constexpr gl_error   GL_ERROR_SUCCESS   = 0; 
     constexpr gl_program GL_PROGRAM_INVALID = 0xFFFFFFFF;
-    constexpr gl_shader  GL_SHADER_STAGE_INVALID   = 0xFFFFFFFF;
-    constexpr gl_uniform GL_UNIFORM_INVALID        = -1;
-    constexpr gl_vertex  GL_VERTEX_INVALID         = -1;
-    constexpr gl_buffer  GL_BUFFER_INVALID         = -1;
+    constexpr gl_shader  GL_SHADER_INVALID  = 0xFFFFFFFF;
+    constexpr gl_uniform GL_UNIFORM_INVALID = -1;
+    constexpr gl_vertex  GL_VERTEX_INVALID  = -1;
+    constexpr gl_buffer  GL_BUFFER_INVALID  = -1;
 
     //-------------------------------------------------------------------
     // METHODS
