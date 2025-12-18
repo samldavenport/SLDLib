@@ -35,7 +35,10 @@ namespace sld {
     // METHODS
     //-------------------------------------------------------------------
 
-    // shader
+    SLD_API_INLINE void gl_init();
+
+
+    // program
     SLD_API_INLINE void gl_program_create        (gl_program& program, gl_error& error);
     SLD_API_INLINE void gl_program_destroy       (gl_program& program, gl_error& error, gl_status& status);
     SLD_API_INLINE void gl_program_link          (gl_program& program, gl_error& error, gl_status& status);
