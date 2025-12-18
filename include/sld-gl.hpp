@@ -31,12 +31,28 @@ namespace sld {
     constexpr gl_vertex  GL_VERTEX_INVALID  = -1;
     constexpr gl_buffer  GL_BUFFER_INVALID  = -1;
 
+    constexpr cchar GL_HELLO_TRIANGLE_SHADER_VERTEX[] = 
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "}\0";
+
+    constexpr cchar GL_HELLO_TRIANGLE_SHADER_FRAGMENT[] =
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+        "void main()\n"
+        "{\n"
+        "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "}\0";
+
     //-------------------------------------------------------------------
     // METHODS
     //-------------------------------------------------------------------
 
-    SLD_API_INLINE void gl_init();
-
+    // context
+    SLD_API_INLINE void gl_context_init (void);
 
     // program
     SLD_API_INLINE void gl_program_create        (gl_program& program, gl_error& error);
@@ -82,6 +98,14 @@ namespace sld {
     //-------------------------------------------------------------------
     // SHADER INLINE METHODS
     //-------------------------------------------------------------------
+
+    SLD_API_INLINE void
+    gl_context_init(
+        void) {
+
+        const bool did_init = (glewInit() == GLEW_OK);
+        assert(did_init);
+    }
 
     SLD_API_INLINE void
     gl_program_create(
