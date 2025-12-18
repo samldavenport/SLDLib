@@ -125,7 +125,6 @@ namespace sld {
                 break;
             }
         }
-
     }
 
     SLD_API_INLINE void
@@ -147,6 +146,8 @@ namespace sld {
     gl_context_enable_smoothing(
         gl_error& error) {
 
+        gl_context_clear_errors();
+        
 	    glEnable(GL_MULTISAMPLE);
         error = glGetError();
         if (error != GL_ERROR_SUCCESS) return;
@@ -165,6 +166,8 @@ namespace sld {
         gl_program& program,
         gl_error&   error) {
 
+        gl_context_clear_errors();
+
         program = glCreateProgram ();
         error   = (program == GL_PROGRAM_INVALID) ? glGetError() : GL_ERROR_SUCCESS; 
     }
@@ -174,7 +177,9 @@ namespace sld {
         gl_program& program,
         gl_error&          error,
         gl_status&         status) {
-        
+
+        gl_context_clear_errors();
+
         glDeleteProgram (program);
         glGetProgramiv  (program, GL_DELETE_STATUS, &status);
 
@@ -189,6 +194,8 @@ namespace sld {
         gl_error&   error,
         gl_status&  status) {
 
+        gl_context_clear_errors();
+        
         glLinkProgram  (program);
         glGetProgramiv (program, GL_LINK_STATUS, &status);
 
@@ -202,6 +209,8 @@ namespace sld {
         gl_program& program,
         gl_error&   error) {
 
+        gl_context_clear_errors();
+        
         glUseProgram(program);
         error = glGetError();
     }
@@ -212,6 +221,8 @@ namespace sld {
         gl_error&   error,
         gl_shader&  shader) {
 
+        gl_context_clear_errors();
+        
         glAttachShader(program, shader);
         error = glGetError();
     }
@@ -225,6 +236,8 @@ namespace sld {
  
         assert(name != NULL);
 
+        gl_context_clear_errors();
+        
         uniform = glGetUniformLocation(program, name);
         error   = glGetError();
     }
@@ -238,6 +251,8 @@ namespace sld {
         gl_shader& shader,
         gl_error&  error) {
 
+        gl_context_clear_errors();
+        
         shader = glCreateShader (GL_VERTEX_SHADER);
         error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
@@ -247,6 +262,8 @@ namespace sld {
         gl_shader& shader,
         gl_error&  error) {
 
+        gl_context_clear_errors();
+        
         shader = glCreateShader (GL_TESS_CONTROL_SHADER);
         error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
@@ -256,6 +273,8 @@ namespace sld {
         gl_shader& shader,
         gl_error&  error) {
 
+        gl_context_clear_errors();
+        
         shader = glCreateShader (GL_TESS_EVALUATION_SHADER);
         error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
@@ -265,6 +284,8 @@ namespace sld {
         gl_shader& shader,
         gl_error&  error) {
 
+        gl_context_clear_errors();
+        
         shader = glCreateShader (GL_GEOMETRY_SHADER);
         error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
@@ -274,6 +295,8 @@ namespace sld {
         gl_shader& shader,
         gl_error&  error) {
 
+        gl_context_clear_errors();
+        
         shader = glCreateShader(GL_FRAGMENT_SHADER);
         error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
@@ -284,6 +307,8 @@ namespace sld {
         gl_error&  error,
         gl_status  status) {
 
+        gl_context_clear_errors();
+        
         glDeleteShader (shader);
         glGetShaderiv  (shader, GL_DELETE_STATUS, &status);
 
@@ -297,6 +322,8 @@ namespace sld {
         gl_status&   status,
         const cchar* buffer) {
 
+        gl_context_clear_errors();
+        
         assert(buffer != NULL);
 
         glShaderSource  (shader, 1, &buffer, NULL);
