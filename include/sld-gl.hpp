@@ -14,8 +14,8 @@ namespace sld {
     using gl_error          = GLint;
     using gl_uniform        = GLint;
     using gl_status         = GLint; 
-    using gl_program = GLuint;
-    using gl_shader   = GLuint;
+    using gl_program        = GLuint;
+    using gl_shader         = GLuint;
     using gl_vertex         = GLuint; 
     using gl_attribute      = GLuint; 
     using gl_buffer         = GLuint;
@@ -26,7 +26,7 @@ namespace sld {
 
     constexpr gl_error   GL_ERROR_SUCCESS   = 0; 
     constexpr gl_program GL_PROGRAM_INVALID = 0xFFFFFFFF;
-    constexpr gl_shader  GL_SHADER_INVALID  = 0xFFFFFFFF;
+    constexpr gl_shader  GL_SHADER_INVALID  = 0;
     constexpr gl_uniform GL_UNIFORM_INVALID = -1;
     constexpr gl_vertex  GL_VERTEX_INVALID  = -1;
     constexpr gl_buffer  GL_BUFFER_INVALID  = -1;
@@ -52,7 +52,9 @@ namespace sld {
     //-------------------------------------------------------------------
 
     // context
-    SLD_API_INLINE void gl_context_init (void);
+    SLD_API_INLINE void gl_context_init                   (void);
+    SLD_API_INLINE void gl_context_enable_depth_buffering (void);
+    SLD_API_INLINE void gl_context_enable_smoothing       (void);
 
     // program
     SLD_API_INLINE void gl_program_create        (gl_program& program, gl_error& error);
@@ -107,10 +109,34 @@ namespace sld {
         assert(did_init);
     }
 
+    //TODO(SAM): something in enabling depth buffering / smoothing
+    // is generating an error, need to investigate
+
+    SLD_API_INLINE void
+    gl_context_enable_depth_buffering(
+        void) {
+
+	    glEnable    (GL_DEPTH_TEST);
+	    glDepthFunc (GL_LESS);
+    }
+
+    SLD_API_INLINE void
+    gl_context_enable_smoothing(
+        void) {
+
+        glHint   (GL_SAMPLES, 4);
+	    glEnable (GL_MULTISAMPLE);
+
+	    glEnable    (GL_BLEND);
+	    glEnable    (GL_LINE_SMOOTH);
+	    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);        
+    }
+
+
     SLD_API_INLINE void
     gl_program_create(
         gl_program& program,
-        gl_error&          error) {
+        gl_error&   error) {
 
         program = glCreateProgram ();
         error   = glGetError      (); 
@@ -186,7 +212,7 @@ namespace sld {
         gl_error&  error) {
 
         shader = glCreateShader (GL_VERTEX_SHADER);
-        error = glGetError     ();
+        error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
     
     SLD_API_INLINE void
@@ -195,7 +221,7 @@ namespace sld {
         gl_error&  error) {
 
         shader = glCreateShader (GL_TESS_CONTROL_SHADER);
-        error = glGetError     ();
+        error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
 
     SLD_API_INLINE void
@@ -204,7 +230,7 @@ namespace sld {
         gl_error&  error) {
 
         shader = glCreateShader (GL_TESS_EVALUATION_SHADER);
-        error = glGetError     ();
+        error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
 
     SLD_API_INLINE void
@@ -213,7 +239,7 @@ namespace sld {
         gl_error&  error) {
 
         shader = glCreateShader (GL_GEOMETRY_SHADER);
-        error = glGetError     ();
+        error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
     
     SLD_API_INLINE void
@@ -222,7 +248,7 @@ namespace sld {
         gl_error&  error) {
 
         shader = glCreateShader(GL_FRAGMENT_SHADER);
-        error = glGetError();
+        error  = (shader == GL_SHADER_INVALID) ? glGetError() : GL_ERROR_SUCCESS;
     }
 
     SLD_API_INLINE void
@@ -233,7 +259,8 @@ namespace sld {
 
         glDeleteShader (shader);
         glGetShaderiv  (shader, GL_DELETE_STATUS, &status);
-        error = glGetError();
+
+        error = (status == GL_TRUE) ? GL_ERROR_SUCCESS : glGetError();
     }
 
     SLD_API_INLINE void
@@ -249,9 +276,7 @@ namespace sld {
         glCompileShader (shader);
         glGetShaderiv   (shader, GL_COMPILE_STATUS, &status);
 
-        error = (status == GL_TRUE)
-            ? GL_ERROR_SUCCESS
-            : glGetError();
+        error = (status == GL_TRUE) ? GL_ERROR_SUCCESS : glGetError();
     }
 
     //-------------------------------------------------------------------
