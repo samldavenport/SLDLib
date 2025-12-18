@@ -11,14 +11,73 @@ namespace sld {
     // TYPES
     //-------------------------------------------------------------------
      
-    using gl_error          = GLint;
-    using gl_uniform        = GLint;
-    using gl_status         = GLint; 
-    using gl_program        = GLuint;
-    using gl_shader         = GLuint;
-    using gl_vertex         = GLuint; 
-    using gl_attribute      = GLuint; 
-    using gl_buffer         = GLuint;
+    using gl_error         = GLint;
+    using gl_uniform       = GLint;
+    using gl_status        = GLint; 
+    using gl_program       = GLuint;
+    using gl_shader        = GLuint;
+    using gl_vertex        = GLuint; 
+    using gl_attribute     = GLuint; 
+    using gl_buffer        = GLuint;
+    using gl_buffer_type   = GLenum;
+    using gl_buffer_useage = GLenum;
+
+    //-------------------------------------------------------------------
+    // METHODS
+    //-------------------------------------------------------------------
+
+    // context
+    SLD_API_INLINE void gl_context_init                   (void);
+    SLD_API_INLINE void gl_context_clear_errors           (void);
+    SLD_API_INLINE void gl_context_enable_depth_buffering (gl_error& error);
+    SLD_API_INLINE void gl_context_enable_smoothing       (gl_error& error);
+
+    // program
+    SLD_API_INLINE void gl_program_create        (gl_program& program, gl_error& error);
+    SLD_API_INLINE void gl_program_destroy       (gl_program& program, gl_error& error, gl_status& status);
+    SLD_API_INLINE void gl_program_link          (gl_program& program, gl_error& error, gl_status& status);
+    SLD_API_INLINE void gl_program_set_active    (gl_program& program, gl_error& error);
+    SLD_API_INLINE void gl_program_attach_shader (gl_program& program, gl_error& error, gl_shader& shader);
+    SLD_API_INLINE void gl_program_get_uniform   (gl_program& program, gl_error& error, gl_uniform& uniform, const cchar* name);
+
+    // shader
+    SLD_API_INLINE void gl_shader_create_vertex                  (gl_shader& shader,  gl_error& error);
+    SLD_API_INLINE void gl_shader_create_tessellation_control    (gl_shader& shader,  gl_error& error);
+    SLD_API_INLINE void gl_shader_create_tessellation_evaluation (gl_shader& shader,  gl_error& error);
+    SLD_API_INLINE void gl_shader_create_geometry                (gl_shader& shader,  gl_error& error);
+    SLD_API_INLINE void gl_shader_create_fragment                (gl_shader& shader,  gl_error& error);
+    SLD_API_INLINE void gl_shader_destroy                        (gl_shader& shader,  gl_error& error);
+    SLD_API_INLINE void gl_shader_compile                        (gl_shader& shader,  gl_error& error, gl_status& status, const cchar* buffer);
+
+    // buffer
+    SLD_API_INLINE void gl_buffer_create    (gl_buffer* buffer, gl_error& error, const u32 count);
+    SLD_API_INLINE void gl_buffer_destroy   (gl_buffer* buffer, gl_error& error, const u32 count);
+    SLD_API_INLINE void gl_buffer_bind_type (gl_buffer& buffer, gl_error& error, const gl_buffer_type type);
+    SLD_API_INLINE void gl_buffer_set_data  (gl_buffer& buffer, gl_error& error, const gl_buffer_type type);
+
+    // uniform
+    SLD_API_INLINE void gl_uniform_set_s32  (gl_uniform& uniform, gl_error& error, s32&  value);
+    SLD_API_INLINE void gl_uniform_set_u32  (gl_uniform& uniform, gl_error& error, u32&  value);
+    SLD_API_INLINE void gl_uniform_set_f32  (gl_uniform& uniform, gl_error& error, f32&  value);
+    SLD_API_INLINE void gl_uniform_set_vec2 (gl_uniform& uniform, gl_error& error, vec2& value);
+    SLD_API_INLINE void gl_uniform_set_vec3 (gl_uniform& uniform, gl_error& error, vec3& value);
+    SLD_API_INLINE void gl_uniform_set_mat3 (gl_uniform& uniform, gl_error& error, mat3& value);
+    SLD_API_INLINE void gl_uniform_set_mat4 (gl_uniform& uniform, gl_error& error, mat4& value);
+
+    // vertex
+    SLD_API_INLINE void gl_vertex_create                (gl_vertex&    vertex,    gl_error& error);
+    SLD_API_INLINE void gl_vertex_destroy               (gl_vertex&    vertex,    gl_error& error);
+    SLD_API_INLINE void gl_vertex_enable                (gl_vertex&    vertex,    gl_error& error);
+    SLD_API_INLINE void gl_vertex_disable               (gl_vertex&    vertex,    gl_error& error);
+    SLD_API_INLINE void gl_vertex_attribute_enable      (gl_attribute& attribute, gl_error& error);
+    SLD_API_INLINE void gl_vertex_attribute_disable     (gl_attribute& attribute, gl_error& error);
+    SLD_API_INLINE void gl_vertex_attribute_define_s32  (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    SLD_API_INLINE void gl_vertex_attribute_define_u32  (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    SLD_API_INLINE void gl_vertex_attribute_define_f32  (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    SLD_API_INLINE void gl_vertex_attribute_define_vec2 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    SLD_API_INLINE void gl_vertex_attribute_define_vec3 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    SLD_API_INLINE void gl_vertex_attribute_define_mat3 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    SLD_API_INLINE void gl_vertex_attribute_define_mat4 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
 
     //-------------------------------------------------------------------
     // CONSTANTS
@@ -48,118 +107,60 @@ namespace sld {
         "}\0";
 
     //-------------------------------------------------------------------
-    // METHODS
+    // ENUMS
     //-------------------------------------------------------------------
 
-    // context
-    SLD_API_INLINE void gl_context_init                   (void);
-    SLD_API_INLINE void gl_context_clear_errors           (void);
-    SLD_API_INLINE void gl_context_enable_depth_buffering (gl_error& error);
-    SLD_API_INLINE void gl_context_enable_smoothing       (gl_error& error);
+    enum gl_buffer_type_ {
+        gl_buffer_type_atomic_counter     = 0,
+        gl_buffer_type_copy_read          = 1,
+        gl_buffer_type_copy_write         = 2,
+        gl_buffer_type_dispatch_indirect  = 3,
+        gl_buffer_type_draw_indirect      = 4,
+        gl_buffer_type_element_array      = 5,
+        gl_buffer_type_pixel_pack         = 6,
+        gl_buffer_type_pixel_unpack       = 7,
+        gl_buffer_type_query              = 9,
+        gl_buffer_type_shader_storage     = 10,
+        gl_buffer_type_texture            = 11,
+        gl_buffer_type_transform_feedback = 12,
+        gl_buffer_type_uniform            = 13,
+        gl_buffer_type_count              = 14
+    };
 
-    // program
-    SLD_API_INLINE void gl_program_create        (gl_program& program, gl_error& error);
-    SLD_API_INLINE void gl_program_destroy       (gl_program& program, gl_error& error, gl_status& status);
-    SLD_API_INLINE void gl_program_link          (gl_program& program, gl_error& error, gl_status& status);
-    SLD_API_INLINE void gl_program_set_active    (gl_program& program, gl_error& error);
-    SLD_API_INLINE void gl_program_attach_shader (gl_program& program, gl_error& error, gl_shader& shader);
-    SLD_API_INLINE void gl_program_get_uniform   (gl_program& program, gl_error& error, gl_uniform& uniform, const cchar* name);
-
-    // shader
-    SLD_API_INLINE void gl_shader_create_vertex                  (gl_shader& shader,  gl_error& error);
-    SLD_API_INLINE void gl_shader_create_tessellation_control    (gl_shader& shader,  gl_error& error);
-    SLD_API_INLINE void gl_shader_create_tessellation_evaluation (gl_shader& shader,  gl_error& error);
-    SLD_API_INLINE void gl_shader_create_geometry                (gl_shader& shader,  gl_error& error);
-    SLD_API_INLINE void gl_shader_create_fragment                (gl_shader& shader,  gl_error& error);
-    SLD_API_INLINE void gl_shader_destroy                        (gl_shader& shader,  gl_error& error);
-    SLD_API_INLINE void gl_shader_compile                        (gl_shader& shader,  gl_error& error, gl_status& status, const cchar* buffer);
-
-    // uniform
-    SLD_API_INLINE void gl_uniform_set_s32  (gl_uniform& uniform, gl_error& error, s32&  value);
-    SLD_API_INLINE void gl_uniform_set_u32  (gl_uniform& uniform, gl_error& error, u32&  value);
-    SLD_API_INLINE void gl_uniform_set_f32  (gl_uniform& uniform, gl_error& error, f32&  value);
-    SLD_API_INLINE void gl_uniform_set_vec2 (gl_uniform& uniform, gl_error& error, vec2& value);
-    SLD_API_INLINE void gl_uniform_set_vec3 (gl_uniform& uniform, gl_error& error, vec3& value);
-    SLD_API_INLINE void gl_uniform_set_mat3 (gl_uniform& uniform, gl_error& error, mat3& value);
-    SLD_API_INLINE void gl_uniform_set_mat4 (gl_uniform& uniform, gl_error& error, mat4& value);
-
-    // vertex
-    SLD_API_INLINE void gl_vertex_create                (gl_vertex&    vertex,    gl_error& error);
-    SLD_API_INLINE void gl_vertex_destroy               (gl_vertex&    vertex,    gl_error& error);
-    SLD_API_INLINE void gl_vertex_enable                (gl_vertex&    vertex,    gl_error& error);
-    SLD_API_INLINE void gl_vertex_disable               (gl_vertex&    vertex,    gl_error& error);
-    SLD_API_INLINE void gl_vertex_attribute_enable      (gl_attribute& attribute, gl_error& error);
-    SLD_API_INLINE void gl_vertex_attribute_disable     (gl_attribute& attribute, gl_error& error);
-    SLD_API_INLINE void gl_vertex_attribute_define_s32  (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
-    SLD_API_INLINE void gl_vertex_attribute_define_u32  (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
-    SLD_API_INLINE void gl_vertex_attribute_define_f32  (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
-    SLD_API_INLINE void gl_vertex_attribute_define_vec2 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
-    SLD_API_INLINE void gl_vertex_attribute_define_vec3 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
-    SLD_API_INLINE void gl_vertex_attribute_define_mat3 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
-    SLD_API_INLINE void gl_vertex_attribute_define_mat4 (gl_attribute& attribute, gl_error& error, u32& attribute_offset, u32& vertex_size);
+    enum gl_buffer_useage_ {
+        gl_buffer_useage_stream_read  = 0,
+        gl_buffer_useage_stream_copy  = 1,
+        gl_buffer_useage_static_draw  = 2,
+        gl_buffer_useage_static_read  = 3,
+        gl_buffer_useage_static_copy  = 4,
+        gl_buffer_useage_dynamic_draw = 5,
+        gl_buffer_useage_dynamic_read = 6,
+        gl_buffer_useage_dynamic_copy = 7,
+        gl_buffer_useage_count        = 8
+    };
 
     //-------------------------------------------------------------------
-    // SHADER INLINE METHODS
+    // CONTEXT
     //-------------------------------------------------------------------
 
     SLD_API_INLINE void
     gl_context_init(
         void) {
 
-        const bool did_init = (glewInit() == GLEW_OK);
-        assert(did_init);
+  
     }
     
-    SLD_API_INLINE void
-    gl_context_clear_errors(
-        void) {
-
-        constexpr s32 MAX_ERRORS = 0x7FFFFFFF;
-
-        for (
-            u32 index = 0;
-            index < MAX_ERRORS;
-            ++index) {
-
-            if (glGetError() == GL_ERROR_SUCCESS) {
-                break;
-            }
-        }
-    }
 
     SLD_API_INLINE void
     gl_context_enable_depth_buffering(
         gl_error& error) {
 
-        gl_context_clear_errors();
 
-	    glEnable(GL_DEPTH_TEST);
-        error = glGetError();
-        if (error != GL_ERROR_SUCCESS) return;
-
-	    glDepthFunc (GL_LESS);
-        error = glGetError();
-        if (error != GL_ERROR_SUCCESS) return;
     }
 
-    SLD_API_INLINE void
-    gl_context_enable_smoothing(
-        gl_error& error) {
-
-        gl_context_clear_errors();
-        
-	    glEnable(GL_MULTISAMPLE);
-        error = glGetError();
-        if (error != GL_ERROR_SUCCESS) return;
-
-	    glEnable    (GL_BLEND);
-        error = glGetError();
-        if (error != GL_ERROR_SUCCESS) return;
-
-	    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);        
-        error = glGetError();
-        if (error != GL_ERROR_SUCCESS) return;
-    }
+    //-------------------------------------------------------------------
+    // PROGRAM
+    //-------------------------------------------------------------------
 
     SLD_API_INLINE void
     gl_program_create(
@@ -243,7 +244,7 @@ namespace sld {
     }
 
     //-------------------------------------------------------------------
-    // SHADER shader INLINE METHODS
+    // SHADER
     //-------------------------------------------------------------------
 
     SLD_API_INLINE void
@@ -334,7 +335,57 @@ namespace sld {
     }
 
     //-------------------------------------------------------------------
-    // UNIFORM INLINE METHODS
+    // BUFFER
+    //-------------------------------------------------------------------
+
+    SLD_API_INLINE void
+    gl_buffer_create(
+        gl_buffer* buffer,
+        gl_error&  error, 
+        const s32  count) {
+
+        assert(buffer);
+        gl_context_clear_errors();
+        glGenBuffers(count, buffer);
+        error = glGetError();
+    }
+
+    SLD_API_INLINE void
+    gl_buffer_destroy(
+        gl_buffer* buffer,
+        gl_error&  error, 
+        const s32  count) {
+
+        assert(buffer);
+        gl_context_clear_errors();
+        glDeleteBuffers(count, buffer);
+        error = glGetError();
+    }
+
+    SLD_API_INLINE void
+    gl_buffer_bind_type_vertex(
+        gl_buffer& buffer,
+        gl_error&  error) {
+        
+        gl_context_clear_errors();
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        error = glGetError();
+    }
+
+    SLD_API_INLINE void
+    gl_buffer_bind_type_index(
+        gl_buffer& buffer,
+        gl_error&  error) {
+
+        gl_context_clear_errors();
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        error = glGetError();
+    }
+
+
+
+    //-------------------------------------------------------------------
+    // UNIFORM
     //-------------------------------------------------------------------
 
     SLD_API_INLINE void
@@ -438,7 +489,7 @@ namespace sld {
     }
      
     //-------------------------------------------------------------------
-    // VERTEX INLINE METHODS
+    // VERTEX
     //-------------------------------------------------------------------
 
     SLD_API_INLINE void
