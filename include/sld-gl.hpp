@@ -53,8 +53,9 @@ namespace sld {
 
     // context
     SLD_API_INLINE void gl_context_init                   (void);
-    SLD_API_INLINE void gl_context_enable_depth_buffering (void);
-    SLD_API_INLINE void gl_context_enable_smoothing       (void);
+    SLD_API_INLINE void gl_context_clear_errors           (void);
+    SLD_API_INLINE void gl_context_enable_depth_buffering (gl_error& error);
+    SLD_API_INLINE void gl_context_enable_smoothing       (gl_error& error);
 
     // program
     SLD_API_INLINE void gl_program_create        (gl_program& program, gl_error& error);
@@ -108,30 +109,56 @@ namespace sld {
         const bool did_init = (glewInit() == GLEW_OK);
         assert(did_init);
     }
+    
+    SLD_API_INLINE void
+    gl_context_clear_errors(
+        void) {
 
-    //TODO(SAM): something in enabling depth buffering / smoothing
-    // is generating an error, need to investigate
+        constexpr s32 MAX_ERRORS = 0x7FFFFFFF;
+
+        for (
+            u32 index = 0;
+            index < MAX_ERRORS;
+            ++index) {
+
+            if (glGetError() == GL_ERROR_SUCCESS) {
+                break;
+            }
+        }
+
+    }
 
     SLD_API_INLINE void
     gl_context_enable_depth_buffering(
-        void) {
+        gl_error& error) {
 
-	    glEnable    (GL_DEPTH_TEST);
+        gl_context_clear_errors();
+
+	    glEnable(GL_DEPTH_TEST);
+        error = glGetError();
+        if (error != GL_ERROR_SUCCESS) return;
+
 	    glDepthFunc (GL_LESS);
+        error = glGetError();
+        if (error != GL_ERROR_SUCCESS) return;
     }
 
     SLD_API_INLINE void
     gl_context_enable_smoothing(
-        void) {
+        gl_error& error) {
 
-        glHint   (GL_SAMPLES, 4);
-	    glEnable (GL_MULTISAMPLE);
+	    glEnable(GL_MULTISAMPLE);
+        error = glGetError();
+        if (error != GL_ERROR_SUCCESS) return;
 
 	    glEnable    (GL_BLEND);
-	    glEnable    (GL_LINE_SMOOTH);
-	    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);        
-    }
+        error = glGetError();
+        if (error != GL_ERROR_SUCCESS) return;
 
+	    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);        
+        error = glGetError();
+        if (error != GL_ERROR_SUCCESS) return;
+    }
 
     SLD_API_INLINE void
     gl_program_create(
@@ -139,7 +166,7 @@ namespace sld {
         gl_error&   error) {
 
         program = glCreateProgram ();
-        error   = glGetError      (); 
+        error   = (program == GL_PROGRAM_INVALID) ? glGetError() : GL_ERROR_SUCCESS; 
     }
 
     SLD_API_INLINE void
