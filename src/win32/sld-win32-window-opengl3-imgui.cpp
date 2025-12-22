@@ -26,8 +26,6 @@ namespace sld {
         WPARAM w_param,
         LPARAM l_param);
 
-    ImGuiContext* win32_window_init_imgui   (HWND window_handle);
-    HGLRC         win32_window_init_opengl  (HDC  device_context);
     LPWNDCLASSA   win32_window_get_class    (void);
     
     //-------------------------------------------------------------------
@@ -75,132 +73,27 @@ namespace sld {
             return(false);
         }
 
-        // init opengl
-        const HGLRC gl_context = win32_window_init_opengl(device_context);
-        if (!gl_context) {
-            win32_window_set_last_error();            
-            assert(CloseWindow (window_handle));
-            assert(ReleaseDC   (window_handle, device_context));
-            return(false);            
-        }
 
         // init imgui
-        const ImGuiContext* imgui_is_init = win32_window_init_imgui(window_handle);
-        if (!imgui_is_init) {
-            win32_window_set_last_error();            
-            assert (CloseWindow      (window_handle));
-            assert (ReleaseDC        (window_handle, device_context));
-            assert (wglDeleteContext (gl_context));
-            return(false);            
-        }
+        // const ImGuiContext* imgui_is_init = win32_window_init_imgui(window_handle);
+        // if (!imgui_is_init) {
+        //     win32_window_set_last_error();            
+        //     assert (CloseWindow      (window_handle));
+        //     assert (ReleaseDC        (window_handle, device_context));
+        //     return(false);            
+        // }
         
         return((os_window_handle)window_handle);
     }
 
-    SLD_API_OS_FUNC bool 
-    win32_window_set_viewport(
-        const os_window_handle    window,
-        const os_window_viewport* viewport) {
-
-        assert(window != NULL && viewport != NULL);
-
-        glViewport(
-            viewport->pos_x,
-            viewport->pos_y,
-            viewport->width,
-            viewport->height);
-
-        return(true);
-    }
-
-    SLD_API_OS_FUNC bool 
-    win32_window_set_clear_color(
-        const os_window_handle window,
-        const os_window_color*  color) {
-
-        assert(window != NULL && color != NULL);
-
-        constexpr f32 normal_factor = (1.0f/255.0f);
-        const     f32 normal_r      = normal_factor * ((f32)color->r);
-        const     f32 normal_g      = normal_factor * ((f32)color->g);
-        const     f32 normal_b      = normal_factor * ((f32)color->b);
-        const     f32 normal_a      = normal_factor * ((f32)color->a);
-
-        glClearColor(
-            normal_r,
-            normal_g,
-            normal_b,
-            normal_a
-        );
-        glLoadIdentity();
-
-        return(true);
-    }
-
-    SLD_API_OS_FUNC bool 
-    win32_window_frame_start(
-        const os_window_handle window) {
-
-        assert(window != NULL);
-
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // ImGui_ImplOpenGL3_NewFrame();
-        // ImGui_ImplWin32_NewFrame();
-        // ImGui::NewFrame();
-
-        return(true);
-    }
-    
-    SLD_API_OS_FUNC bool 
-    win32_window_frame_render(
-        const os_window_handle window) {
-
-        assert(window);
-        win32_window_clear_last_error();
-
-        // ImGui::Render();
-        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        HDC        device_context = GetDC       ((HWND)window);
-        const bool result         = SwapBuffers (device_context);
-        if (!result) {
-            win32_window_set_last_error();
-            return(false);
-        }
-
-        return(result);
-    }
-
-    //-------------------------------------------------------------------
-    // INTERNAL METHODS
-    //-------------------------------------------------------------------
-
-    SLD_API_OS_INTERNAL ImGuiContext*
-    win32_window_init_imgui(
-        HWND window_handle) {
-
-        // initialize context
-        ImGuiContext* imgui_context = IMGUI_CHECKVERSION() ? ImGui::CreateContext() : NULL;  
-        if (imgui_context) {
-
-            // initialize win32/opengl methods
-            bool did_init_impl = true;
-            did_init_impl &= ImGui_ImplWin32_InitForOpenGL (window_handle);
-            did_init_impl &= ImGui_ImplOpenGL3_Init        ("#version 330");
-
-            if (!did_init_impl) {
-                ImGui::DestroyContext(imgui_context);
-                imgui_context = NULL;
-            }
-        }
-
-        return(imgui_context);        
-    }
-
-    SLD_API_OS_INTERNAL HGLRC
+    SLD_API_OS os_window_gl_context
     win32_window_init_opengl(
-        HDC device_context) {
+        const os_window_handle window) {
+
+        // get the device context
+        assert(window);
+        const HWND window_handle  = (HWND)window;
+        const HDC  device_context = GetDC(window_handle);
 
         //set our preferred format descriptor
         PIXELFORMATDESCRIPTOR preferred_format_descriptor = {0};
@@ -243,8 +136,71 @@ namespace sld {
             gl_context_actual_is_current &&
             gl_context_dummy_is_deleted
         );
-        return(gl_context_actual);
-    };
+        return((os_window_gl_context)gl_context_actual);
+    }
+
+    SLD_API_OS_FUNC ImGuiContext*
+    win32_window_init_imgui(
+        const os_window_handle window_handle) {
+
+        const HWND win32_window = (HWND)window_handle;
+        // initialize context
+        ImGuiContext* imgui_context = IMGUI_CHECKVERSION() ? ImGui::CreateContext() : NULL;  
+        if (imgui_context) {
+
+            // initialize win32/opengl methods
+            bool did_init_impl = true;
+            did_init_impl &= ImGui_ImplWin32_InitForOpenGL (window_handle);
+            did_init_impl &= ImGui_ImplOpenGL3_Init        ("#version 330");
+
+            if (!did_init_impl) {
+                ImGui::DestroyContext(imgui_context);
+                imgui_context = NULL;
+            }
+        }
+
+        return(imgui_context);        
+    }
+
+
+    SLD_API_OS_FUNC bool 
+    win32_window_frame_start(
+        const os_window_handle window) {
+
+        assert(window != NULL);
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+
+        return(true);
+    }
+    
+    SLD_API_OS_FUNC bool 
+    win32_window_frame_render(
+        const os_window_handle window) {
+
+        assert(window);
+        win32_window_clear_last_error();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        HDC        device_context = GetDC       ((HWND)window);
+        const bool result         = SwapBuffers (device_context);
+        if (!result) {
+            win32_window_set_last_error();
+            return(false);
+        }
+
+        return(result);
+    }
+
+    //-------------------------------------------------------------------
+    // INTERNAL METHODS
+    //-------------------------------------------------------------------
 
     SLD_API_OS_INTERNAL LPWNDCLASSA
     win32_window_get_class(
