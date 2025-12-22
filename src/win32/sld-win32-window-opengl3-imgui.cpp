@@ -2,6 +2,10 @@
 
 #include "sld-win32.hpp"
 
+#include <GL/wglew.h>
+#include <GL/wgl.h>
+#include <GL/wglext.h>
+
 extern IMGUI_IMPL_API LRESULT 
 ImGui_ImplWin32_WndProcHandler(
     HWND   hWnd,
@@ -128,6 +132,7 @@ namespace sld {
             normal_b,
             normal_a
         );
+        glLoadIdentity();
 
         return(true);
     }
@@ -140,9 +145,9 @@ namespace sld {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
+        // ImGui_ImplOpenGL3_NewFrame();
+        // ImGui_ImplWin32_NewFrame();
+        // ImGui::NewFrame();
 
         return(true);
     }
@@ -154,8 +159,8 @@ namespace sld {
         assert(window);
         win32_window_clear_last_error();
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // ImGui::Render();
+        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         HDC        device_context = GetDC       ((HWND)window);
         const bool result         = SwapBuffers (device_context);
@@ -205,17 +210,40 @@ namespace sld {
         preferred_format_descriptor.iPixelType = PFD_TYPE_RGBA;
         preferred_format_descriptor.cColorBits = 32;
         
-        // set the pixel format and initialize the context
+        // set the pixel format
         const s32   chosen_pixel_format   = ChoosePixelFormat (device_context, &preferred_format_descriptor);
         const bool  is_pixel_format_set   = SetPixelFormat    (device_context, chosen_pixel_format, &preferred_format_descriptor);
-        const HGLRC gl_context            = wglCreateContext  (device_context);
-        const bool  is_gl_context_current = wglMakeCurrent    (device_context, gl_context);
+        
+        // create a dummy context so we can initialize glew
+        const HGLRC gl_context_dummy            = wglCreateContext (device_context);
+        const bool  gl_context_dummy_is_current = wglMakeCurrent   (device_context, gl_context_dummy); 
 
-        // if initialized, return the context
-        bool result = true;
-        result &= is_pixel_format_set; 
-        result &= is_gl_context_current; 
-        return(result ? gl_context : NULL);
+        // initialize glew
+        glewExperimental = true;
+        const bool glew_is_init = (glewInit() == GLEW_OK); 
+        assert(
+            gl_context_dummy != NULL    &&
+            gl_context_dummy_is_current &&
+            glew_is_init
+        );
+
+        // create actual context
+        const s32   wgl_attribs[] = {
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+            WGL_CONTEXT_PROFILE_MASK_ARB,
+            WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0
+        };
+        const HGLRC gl_context_actual            = wglCreateContextAttribsARB (device_context, NULL, wgl_attribs);
+        const bool  gl_context_actual_is_current = wglMakeCurrent             (device_context, gl_context_actual);
+        const bool  gl_context_dummy_is_deleted  = wglDeleteContext           (gl_context_dummy);
+        assert(
+            gl_context_actual != NULL    &&
+            gl_context_actual_is_current &&
+            gl_context_dummy_is_deleted
+        );
+        return(gl_context_actual);
     };
 
     SLD_API_OS_INTERNAL LPWNDCLASSA
