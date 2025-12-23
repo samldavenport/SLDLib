@@ -73,20 +73,10 @@ namespace sld {
             return(false);
         }
 
-
-        // init imgui
-        // const ImGuiContext* imgui_is_init = win32_window_init_imgui(window_handle);
-        // if (!imgui_is_init) {
-        //     win32_window_set_last_error();            
-        //     assert (CloseWindow      (window_handle));
-        //     assert (ReleaseDC        (window_handle, device_context));
-        //     return(false);            
-        // }
-        
         return((os_window_handle)window_handle);
     }
 
-    SLD_API_OS os_window_gl_context
+    SLD_API_OS os_window_opengl
     win32_window_init_opengl(
         const os_window_handle window) {
 
@@ -136,7 +126,7 @@ namespace sld {
             gl_context_actual_is_current &&
             gl_context_dummy_is_deleted
         );
-        return((os_window_gl_context)gl_context_actual);
+        return((os_window_opengl)gl_context_actual);
     }
 
     SLD_API_OS_FUNC ImGuiContext*
