@@ -71,6 +71,8 @@ namespace sld {
 
 #define win32_window_get_last_error        os_window_get_last_error
 #define win32_window_create                os_window_create
+#define win32_window_init_opengl           os_window_init_opengl
+#define win32_window_init_imgui            os_window_init_imgui
 #define win32_window_set_viewport          os_window_set_viewport
 #define win32_window_set_clear_color       os_window_set_clear_color
 #define win32_window_frame_start           os_window_frame_start

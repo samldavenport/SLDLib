@@ -21,17 +21,17 @@ namespace sld {
     // TYPES
     //-------------------------------------------------------------------
 
-    enum os_file_error_e       : s32;
-    enum os_file_access_flag_e : u32;
-    enum os_file_share_flag_e  : u32;
-    enum os_file_mode_e        : u32;
-    enum os_file_async_state_e : u32;
+    enum os_file_error_       : s32;
+    enum os_file_access_flag_ : u32;
+    enum os_file_share_flag_  : u32;
+    enum os_file_mode_        : u32;
+    enum os_file_async_state_ : u32;
 
     using os_file_handle       = void*;
     using os_file_map_handle   = void*;
     using os_file_error        = s32;
-    using os_file_access_flags = u32;
-    using os_file_share_flags  = u32;
+    using os_file_access_flags = flags;
+    using os_file_share_flags  = flags;
     using os_file_mode         = u32;
     using os_file_async_state  = u32;
 
@@ -45,7 +45,7 @@ namespace sld {
     //-------------------------------------------------------------------
 
     // error
-    SLD_API_OS os_file_error os_file_get_last_error        (void);
+    SLD_API_OS os_file_error  os_file_get_last_error        (void);
 
     // file
     SLD_API_OS os_file_handle os_file_open                  (const os_file_config* config);
@@ -106,55 +106,55 @@ namespace sld {
     // ENUMS
     //-------------------------------------------------------------------
 
-    enum os_file_access_flag_e : u32 {
-        os_file_access_flag_e_none          = 0,        
-        os_file_access_flag_e_read          = bit_value(0),        
-        os_file_access_flag_e_write         = bit_value(1)
+    enum os_file_access_flag_ : u32 {
+        os_file_access_flag_none          = 0,        
+        os_file_access_flag_read          = bit_value(0),        
+        os_file_access_flag_write         = bit_value(1)
     };
-    enum os_file_share_flag_e : u32 {
-        os_file_share_flag_e_none           = 0,
-        os_file_share_flag_e_read           = bit_value(0),
-        os_file_share_flag_e_write          = bit_value(1),
-        os_file_share_flag_e_delete         = bit_value(2)
+    enum os_file_share_flag_ : u32 {
+        os_file_share_flag_none           = 0,
+        os_file_share_flag_read           = bit_value(0),
+        os_file_share_flag_write          = bit_value(1),
+        os_file_share_flag_delete         = bit_value(2)
     };
-    enum os_file_mode_e : u32 {
-        os_file_mode_e_create_new           = 0, 
-        os_file_mode_e_open_existing        = 1, 
-        os_file_mode_e_open_always          = 2, 
-        os_file_mode_e_overwrite_existing   = 3 
+    enum os_file_mode_ : u32 {
+        os_file_mode_create_new           = 0, 
+        os_file_mode_open_existing        = 1, 
+        os_file_mode_open_always          = 2, 
+        os_file_mode_overwrite_existing   = 3 
     };
-    enum os_file_async_state_e : u32 {
-        os_file_async_state_e_success       = 0,
-        os_file_async_state_e_error         = 1,
-        os_file_async_state_e_pending       = 2,
-        os_file_async_state_e_timeout       = 3
+    enum os_file_async_state_ : u32 {
+        os_file_async_state_success       = 0,
+        os_file_async_state_error         = 1,
+        os_file_async_state_pending       = 2,
+        os_file_async_state_timeout       = 3
     };
-    enum os_file_error_e : s32 {
-        os_file_error_e_success             =  1,
-        os_file_error_e_unknown             = -1,
-        os_file_error_e_invalid_args        = -2,
-        os_file_error_e_invalid_handle      = -3,
-        os_file_error_e_invalid_disk        = -4,
-        os_file_error_e_invalid_device      = -5,
-        os_file_error_e_invalid_buffer      = -6,
-        os_file_error_e_invalid_file        = -7,
-        os_file_error_e_sharing_violation   = -8,
-        os_file_error_e_already_exists      = -9,
-        os_file_error_e_not_found           = -10,
-        os_file_error_e_access_denied       = -11,
-        os_file_error_e_pipe_busy           = -12,
-        os_file_error_e_reached_end_of_file = -13,
-        os_file_error_e_broken_pipe         = -14,
-        os_file_error_e_no_data             = -15,
-        os_file_error_e_more_data           = -16,
-        os_file_error_e_io_incomplete       = -17,
-        os_file_error_e_io_pending          = -18,
-        os_file_error_e_operation_aborted   = -19,
-        os_file_error_e_disk_io_failure     = -20,
-        os_file_error_e_disk_corrupt        = -21,
-        os_file_error_e_device_not_ready    = -22,
-        os_file_error_e_out_of_memory       = -23,
-        os_file_error_e_device_failure      = -24
+    enum os_file_error_ : s32 {
+        os_file_error_success             =  1,
+        os_file_error_unknown             = -1,
+        os_file_error_invalid_args        = -2,
+        os_file_error_invalid_handle      = -3,
+        os_file_error_invalid_disk        = -4,
+        os_file_error_invalid_device      = -5,
+        os_file_error_invalid_buffer      = -6,
+        os_file_error_invalid_file        = -7,
+        os_file_error_sharing_violation   = -8,
+        os_file_error_already_exists      = -9,
+        os_file_error_not_found           = -10,
+        os_file_error_access_denied       = -11,
+        os_file_error_pipe_busy           = -12,
+        os_file_error_reached_end_of_file = -13,
+        os_file_error_broken_pipe         = -14,
+        os_file_error_no_data             = -15,
+        os_file_error_more_data           = -16,
+        os_file_error_io_incomplete       = -17,
+        os_file_error_io_pending          = -18,
+        os_file_error_operation_aborted   = -19,
+        os_file_error_disk_io_failure     = -20,
+        os_file_error_disk_corrupt        = -21,
+        os_file_error_device_not_ready    = -22,
+        os_file_error_out_of_memory       = -23,
+        os_file_error_device_failure      = -24
     };
 };
 

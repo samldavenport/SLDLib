@@ -20,6 +20,7 @@ namespace sld {
         assert(window);
 
         return(false);
+
     }
 
     SLD_API_OS_FUNC bool

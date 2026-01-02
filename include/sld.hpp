@@ -32,6 +32,8 @@
 #       define assert(expr) if(!expr) *(int*)(NULL)=1
 #   endif
 #endif
+#define nop   assert(true)
+#define panic assert(false)
 
 namespace sld {
 
@@ -125,6 +127,21 @@ namespace sld {
     SLD_UTILITY bool bit_mask_test (const u32 value, const u32 mask)                   { return((value & mask) > 0);                         }
     SLD_UTILITY void bit_mask_and  (u32& value,      const u32 mask)                   { (value |=  mask);                                   }
     SLD_UTILITY void bit_mask_or   (u32& value,      const u32 mask)                   { (value &= ~mask);                                   }
+
+    //-------------------------------------------------------------------
+    // FLAGS
+    //-------------------------------------------------------------------
+
+    struct flags {
+
+        u32 val;
+
+        public:
+        SLD_API_INLINE void set    (const u32 mask)       { val |=  mask;              }
+        SLD_API_INLINE void clear  (const u32 mask)       { val &= ~mask;              }
+        SLD_API_INLINE void toggle (const u32 mask)       { val ^=  mask;              }
+        SLD_API_INLINE bool test   (const u32 mask) const { return((val & mask) != 0); }
+    };
 };
 
 #endif //SLD_HPP
