@@ -8,3 +8,5 @@
 
 #include "sld-win32.cpp"
 #include "sld-cstr.hpp"
+
+#include "sld-sparse-set.hpp"
