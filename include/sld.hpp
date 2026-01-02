@@ -136,7 +136,6 @@ namespace sld {
 
         u32 val;
 
-        public:
         SLD_API_INLINE void set    (const u32 mask)       { val |=  mask;              }
         SLD_API_INLINE void clear  (const u32 mask)       { val &= ~mask;              }
         SLD_API_INLINE void toggle (const u32 mask)       { val ^=  mask;              }
