@@ -81,15 +81,22 @@ namespace sld {
         is_valid &= (memory_start    != NULL);
         is_valid &= (memory_size     >= memory_size_min);
         is_valid &= (capacity        != 0);
-        is_valid &= (max_load_p100   <= 0.0f);
-        is_valid &= (max_load_p100   >= 1.0f);
+        is_valid &= (max_load_p100   >= 0.0f);
+        is_valid &= (max_load_p100   <= 1.0f);
         assert(is_valid);
+
 
         this->_data.key      = (u32*)memory_start;
         this->_data.val      = (t*)(((addr)memory_start) + (sizeof(u32) * capacity)); 
         this->_capacity      = capacity;
         this->_count_current = 0;
         this->_count_max     = (u32)((f32)capacity * max_load_p100); 
+
+        memset(
+            (void*)this->_data.key, // dst
+            0xFF,                   // val
+            sizeof(u32) * capacity  // size
+        );
     }
 
     SLD_API_SPARSE_SET_INLINE
@@ -210,7 +217,7 @@ namespace sld {
               ++probe) {
 
             // if this slot is empty, we're done
-            const bool is_empty = (index == SPARSE_ARRAY_INVALID_INDEX);
+            const bool is_empty = (this->_data.key[index] == SPARSE_ARRAY_INVALID_INDEX);
             if (is_empty) {
 
                 this->_data.val [index] = val;
