@@ -164,14 +164,14 @@ namespace sld {
             const u32 current_key = this->_data.key[index];
 
             // check if this is the data we need        
-            const bool is_empty = (current_key == SPARSE_SET_INVALID_INDEX);
+            const bool is_empty = (current_key == SPARSE_ARRAY_INVALID_INDEX);
             const bool is_found = (current_key == key);
             
             // these cant be true at the same time
             assert(!(is_empty && is_found)); 
 
             // if we found the key or the slot is empty, we're done 
-            if (is_empty) return(SPARSE_SET_INVALID_INDEX);
+            if (is_empty) return(SPARSE_ARRAY_INVALID_INDEX);
             if (is_found) return(index);        
 
             // not found yet, increase sparse index with wrapping
@@ -180,7 +180,7 @@ namespace sld {
 
         // we wrapped completely around without finding anything
         // unlikely, but logically possible
-        return(SPARSE_SET_INVALID_INDEX);
+        return(SPARSE_ARRAY_INVALID_INDEX);
     }
 
     SLD_API_SPARSE_SET_INLINE
@@ -198,7 +198,7 @@ namespace sld {
             return(did_insert);
 
         // assert this doesn't exist already
-        const bool does_not_exist = (this->lookup(key) == SPARSE_SET_INVALID_INDEX); 
+        const bool does_not_exist = (this->lookup(key) == SPARSE_ARRAY_INVALID_INDEX); 
         assert(does_not_exist);
 
         // get the current sparse index
@@ -210,18 +210,20 @@ namespace sld {
               ++probe) {
 
             // if this slot is empty, we're done
-            const bool is_empty = (dense_index == SPARSE_SET_INVALID_INDEX);
+            const bool is_empty = (index == SPARSE_ARRAY_INVALID_INDEX);
             if (is_empty) {
-
 
                 this->_data.val [index] = val;
                 this->_data.key [index] = key;
                 ++this->_count_current;                
-                return(dense_index);
-            } 
+                return(index);
+            }
+
+            // not found yet, increase sparse index with wrapping
+            index = this->mask(index + 1);
         }
 
-        return(SPARSE_SET_INVALID_INDEX);
+        return(SPARSE_ARRAY_INVALID_INDEX);
     }
 
     SLD_API_SPARSE_SET_INLINE
@@ -230,10 +232,10 @@ namespace sld {
 
         this->validate();
         assert(
-            index < this->capacity &&
-            this->_data.key[index] != SPARSE_SET_INVALID_INDEX;
+            index < this->_capacity &&
+            this->_data.key[index] != SPARSE_ARRAY_INVALID_INDEX
         );
-        this->_data.key[index] = SPARSE_SET_INVALID_INDEX;
+        this->_data.key[index] = SPARSE_ARRAY_INVALID_INDEX;
     }
 
     //-------------------------------------------------------------------
@@ -245,10 +247,10 @@ namespace sld {
         u32 index) -> t& {
 
         assert(
-            index < this->capacity &&
-            this->_data.key[index] != SPARSE_SET_INVALID_INDEX;
+            index < this->_capacity &&
+            this->_data.key[index] != SPARSE_ARRAY_INVALID_INDEX
         );
-        return(this->_data.val);
+        return(this->_data.val[index]);
     }
 };
 
