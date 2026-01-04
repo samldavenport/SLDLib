@@ -22,6 +22,12 @@ namespace sld {
         u32   position;
         u32   save;
 
+        // constructor
+        explicit inline
+        stack(
+            byte*     data,
+            const u32 capacity);
+
         // methods
         inline void  init          (byte* data,     const u32 capacity);
         inline byte* push          (const u32 size, const u32 alignment = STACK_DEFAULT_ALIGNMENT);
@@ -40,6 +46,22 @@ namespace sld {
     //-------------------------------------------------------------------
     // INLINE METHODS
     //-------------------------------------------------------------------
+
+    inline
+    stack::stack(
+        byte*     data,
+        const u32 capacity) {
+
+        assert(
+            data     != NULL &&
+            capacity != 0
+        );
+
+        this->data     = data;
+        this->capacity = capacity;
+        this->position = 0;
+        this->save     = 0;
+    }
 
     // methods
     SLD_API_INLINE_STACK

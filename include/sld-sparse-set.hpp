@@ -3,7 +3,9 @@
 
 #include "sld.hpp"
 
-#define SLD_API_SPARSE_SET template<typename t> inline auto sparse_array<t>::
+#define SLD_API_SPARSE_SET_INLINE        template<typename t> inline auto sparse_array<t>::
+#define SLD_API_SPARSE_SET_STATIC_INLINE template<typename t> static inline auto sparse_array<t>::
+#define SLD_API_SPARSE_SET_CONSTRUCTOR   template<typename t> inline sparse_array<t>::
 
 namespace sld {
 
@@ -31,19 +33,25 @@ namespace sld {
     public:
 
         // methods
-        inline void
-        init(
+        static inline u32
+        calculate_memory_size (
+            const u32 capacity) {
+            return((sizeof(u32) + sizeof(t)) * capacity);
+        }
+
+        inline
+        sparse_array(
             const void* memory_start,
             const u32   memory_size,
             const u32   capacity,
             const f32   max_load = SPARSE_ARRAY_MAX_LOAD_DEFAULT
         );
-
-        inline u32  calculate_memory_size (const u32 capacity) const;
+        
         inline void validate              (void)               const;
         inline u32  capacity              (void)               const;
         inline u32  count                 (void)               const;
         inline u32  max_count             (void)               const;
+        inline u32  size                  (void)               const;
         inline u32  mask                  (const u32 key)      const;
         inline u32  lookup                (const u32 key)      const;
 
@@ -58,36 +66,15 @@ namespace sld {
     // METHODS
     //-------------------------------------------------------------------
 
-    SLD_API_SPARSE_SET
-    calculate_memory_size(
-        const u32 capacity) const -> u32 {
-        
-        if (
-            capacity == 0    ||
-            max_load <= 0.0f ||
-            max_load >= 1.0f) {
-
-            return(0);
-        }
-
-        const u32 memory_size = (
-            (sizeof(u32) + sizeof(t)) * capacity;
-        );
-
-        return(memory_size);
-    }
-
-
-    SLD_API_SPARSE_SET
-    init(
+    SLD_API_SPARSE_SET_CONSTRUCTOR
+    sparse_array(
         const void* memory_start,
         const u32   memory_size,
         const u32   capacity,
-        const f32   max_load_p100) -> void {
+        const f32   max_load_p100) {
 
-        const u32 memory_size_min = this->calculate_memory_size(
-            capacity,
-            max_load);
+
+        const u32 memory_size_min = sparse_array<t>::calculate_memory_size(capacity);
 
         bool is_valid = true;
         is_valid &= (memory_size_min != 0);
@@ -98,48 +85,58 @@ namespace sld {
         is_valid &= (max_load_p100   >= 1.0f);
         assert(is_valid);
 
-        this->_data.key      = (*u32)memory_start;
+        this->_data.key      = (u32*)memory_start;
         this->_data.val      = (t*)(((addr)memory_start) + (sizeof(u32) * capacity)); 
         this->_capacity      = capacity;
         this->_count_current = 0;
         this->_count_max     = (u32)((f32)capacity * max_load_p100); 
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     validate(
         void) const -> void{
 
         bool is_valid = true;
         is_valid &= (this->_data.key      != NULL);
-        is_valid &= (this->_data.val.key  != NULL);
+        is_valid &= (this->_data.val      != NULL);
         is_valid &= (this->_capacity      != 0);
         is_valid &= (this->_count_max     != 0);
         is_valid &= (this->_count_current <= this->_count_max);
         assert(is_valid);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     capacity(
         void) const -> u32 {
 
         return(this->_capacity);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     count(
         void) const -> u32 {
 
-        return(this->_count);
+        return(this->_count_current);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     max_count(
         void) const -> u32 { 
 
         return(this->_count_max);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
+    size(
+        void) const -> u32 { 
+
+        const u32 size = (
+            (sizeof(u32) + sizeof(t)) * this->_capacity
+        );
+        return(size);
+    }
+
+    SLD_API_SPARSE_SET_INLINE
     mask(
         const u32 key) const -> u32 {
         
@@ -148,7 +145,7 @@ namespace sld {
         return(mask);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     lookup(
         const u32 key) const -> u32 {
 
@@ -186,7 +183,7 @@ namespace sld {
         return(SPARSE_SET_INVALID_INDEX);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     insert(
         const u32 key,
         const t&  val) -> u32 {
@@ -227,7 +224,7 @@ namespace sld {
         return(SPARSE_SET_INVALID_INDEX);
     }
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     remove(
         const u32 index) -> void {
 
@@ -243,7 +240,7 @@ namespace sld {
     // OPERATORS
     //-------------------------------------------------------------------
 
-    SLD_API_SPARSE_SET
+    SLD_API_SPARSE_SET_INLINE
     operator[](
         u32 index) -> t& {
 
