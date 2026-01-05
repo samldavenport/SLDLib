@@ -53,7 +53,7 @@ namespace sld {
         inline u32  max_count             (void)               const;
         inline u32  size                  (void)               const;
         inline u32  mask                  (const u32 key)      const;
-        inline u32  lookup                (const u32 key)      const;
+        inline u32  lookup_sparse_index   (const u32 key)      const;
 
         inline u32  insert (const u32 key, const t& val);
         inline void remove (const u32 index);
@@ -153,7 +153,7 @@ namespace sld {
     }
 
     SLD_API_SPARSE_SET_INLINE
-    lookup(
+    lookup_sparse_index(
         const u32 key) const -> u32 {
 
         this->validate();
@@ -205,7 +205,7 @@ namespace sld {
             return(did_insert);
 
         // assert this doesn't exist already
-        const bool does_not_exist = (this->lookup(key) == SPARSE_ARRAY_INVALID_INDEX); 
+        const bool does_not_exist = (this->lookup_sparse_index(key) == SPARSE_ARRAY_INVALID_INDEX); 
         assert(does_not_exist);
 
         // get the current sparse index
