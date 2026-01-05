@@ -3,9 +3,9 @@
 
 #include "sld.hpp"
 
-#define SLD_API_SPARSE_SET_INLINE        template<typename t> inline auto sparse_array<t>::
-#define SLD_API_SPARSE_SET_STATIC_INLINE template<typename t> static inline auto sparse_array<t>::
-#define SLD_API_SPARSE_SET_CONSTRUCTOR   template<typename t> inline sparse_array<t>::
+#define SLD_API_SPARSE_ARRAY_INLINE        template<typename t> inline auto sparse_array<t>::
+#define SLD_API_SPARSE_ARRAY_STATIC_INLINE template<typename t> static inline auto sparse_array<t>::
+#define SLD_API_SPARSE_ARRAY_CONSTRUCTOR   template<typename t> inline sparse_array<t>::
 
 namespace sld {
 
@@ -47,13 +47,13 @@ namespace sld {
             const f32   max_load = SPARSE_ARRAY_MAX_LOAD_DEFAULT
         );
         
-        inline void validate              (void)               const;
-        inline u32  capacity              (void)               const;
-        inline u32  count                 (void)               const;
-        inline u32  max_count             (void)               const;
-        inline u32  size                  (void)               const;
-        inline u32  mask                  (const u32 key)      const;
-        inline u32  lookup_sparse_index   (const u32 key)      const;
+        inline void validate              (void)          const;
+        inline u32  capacity              (void)          const;
+        inline u32  count                 (void)          const;
+        inline u32  max_count             (void)          const;
+        inline u32  size                  (void)          const;
+        inline u32  mask                  (const u32 key) const;
+        inline u32  lookup_sparse_index   (const u32 key) const;
 
         inline u32  insert (const u32 key, const t& val);
         inline void remove (const u32 index);
@@ -66,16 +66,17 @@ namespace sld {
     // METHODS
     //-------------------------------------------------------------------
 
-    SLD_API_SPARSE_SET_CONSTRUCTOR
+    SLD_API_SPARSE_ARRAY_CONSTRUCTOR
     sparse_array(
         const void* memory_start,
         const u32   memory_size,
         const u32   capacity,
         const f32   max_load_p100) {
 
-
+        // calculate memory requirements
         const u32 memory_size_min = sparse_array<t>::calculate_memory_size(capacity);
 
+        // check args
         bool is_valid = true;
         is_valid &= (memory_size_min != 0);
         is_valid &= (memory_start    != NULL);
@@ -85,13 +86,14 @@ namespace sld {
         is_valid &= (max_load_p100   <= 1.0f);
         assert(is_valid);
 
-
+        // set pointers
         this->_data.key      = (u32*)memory_start;
         this->_data.val      = (t*)(((addr)memory_start) + (sizeof(u32) * capacity)); 
         this->_capacity      = capacity;
         this->_count_current = 0;
         this->_count_max     = (u32)((f32)capacity * max_load_p100); 
 
+        // set all keys to invalid
         memset(
             (void*)this->_data.key, // dst
             0xFF,                   // val
@@ -99,7 +101,7 @@ namespace sld {
         );
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     validate(
         void) const -> void{
 
@@ -112,28 +114,28 @@ namespace sld {
         assert(is_valid);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     capacity(
         void) const -> u32 {
 
         return(this->_capacity);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     count(
         void) const -> u32 {
 
         return(this->_count_current);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     max_count(
         void) const -> u32 { 
 
         return(this->_count_max);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     size(
         void) const -> u32 { 
 
@@ -143,7 +145,7 @@ namespace sld {
         return(size);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     mask(
         const u32 key) const -> u32 {
         
@@ -152,7 +154,7 @@ namespace sld {
         return(mask);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     lookup_sparse_index(
         const u32 key) const -> u32 {
 
@@ -190,7 +192,7 @@ namespace sld {
         return(SPARSE_ARRAY_INVALID_INDEX);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     insert(
         const u32 key,
         const t&  val) -> u32 {
@@ -233,7 +235,7 @@ namespace sld {
         return(SPARSE_ARRAY_INVALID_INDEX);
     }
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     remove(
         const u32 index) -> void {
 
@@ -249,7 +251,7 @@ namespace sld {
     // OPERATORS
     //-------------------------------------------------------------------
 
-    SLD_API_SPARSE_SET_INLINE
+    SLD_API_SPARSE_ARRAY_INLINE
     operator[](
         u32 index) -> t& {
 
