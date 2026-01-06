@@ -3,14 +3,14 @@
 
 #include "sld.hpp"
 
-#define SLD_API_SPARSE_ARRAY_INLINE        template<typename t> inline auto sparse_array<t>::
-#define SLD_API_SPARSE_ARRAY_STATIC_INLINE template<typename t> static inline auto sparse_array<t>::
-#define SLD_API_SPARSE_ARRAY_CONSTRUCTOR   template<typename t> inline sparse_array<t>::
+#define SLD_API_SPARSE_ARRAY_INLINE        template<typename t> inline        auto sparse_array<t>::
+#define SLD_API_SPARSE_ARRAY_STATIC_INLINE template<typename t> inline static auto sparse_array<t>::
+#define SLD_API_SPARSE_ARRAY_CONSTRUCTOR   template<typename t> inline             sparse_array<t>::
 
 namespace sld {
 
     //-------------------------------------------------------------------
-    // SPARSE SET
+    // SPARSE ARRAY
     //-------------------------------------------------------------------
 
     constexpr u32 SPARSE_ARRAY_INVALID_INDEX    = 0xFFFFFFFF;
@@ -47,13 +47,13 @@ namespace sld {
             const f32   max_load = SPARSE_ARRAY_MAX_LOAD_DEFAULT
         );
         
-        inline void validate              (void)          const;
-        inline u32  capacity              (void)          const;
-        inline u32  count                 (void)          const;
-        inline u32  max_count             (void)          const;
-        inline u32  size                  (void)          const;
-        inline u32  mask                  (const u32 key) const;
-        inline u32  lookup_sparse_index   (const u32 key) const;
+        inline void validate            (void)          const;
+        inline u32  capacity            (void)          const;
+        inline u32  count               (void)          const;
+        inline u32  max_count           (void)          const;
+        inline u32  size                (void)          const;
+        inline u32  mask                (const u32 key) const;
+        inline u32  lookup_sparse_index (const u32 key) const;
 
         inline u32  insert (const u32 key, const t& val);
         inline void remove (const u32 index);
@@ -241,7 +241,7 @@ namespace sld {
 
         this->validate();
         assert(
-            index < this->_capacity &&
+            index                  <  this->_capacity &&
             this->_data.key[index] != SPARSE_ARRAY_INVALID_INDEX
         );
         this->_data.key[index] = SPARSE_ARRAY_INVALID_INDEX;
