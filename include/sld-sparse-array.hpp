@@ -39,6 +39,13 @@ namespace sld {
             return((sizeof(u32) + sizeof(t)) * capacity);
         }
 
+        static inline u32
+        key_value_size(
+            void) {
+
+            return(sizeof(u32) + sizeof(t));
+        }
+
         inline
         sparse_array(
             const void* memory_start,
