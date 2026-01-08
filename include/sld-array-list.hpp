@@ -26,6 +26,7 @@ namespace sld {
 
         // methods
         inline void     init         (element* data, const u64 capacity);
+        inline void     validate     (void) const;
         inline bool     is_valid     (void) const;
         inline bool     is_empty     (void) const;
         inline bool     is_full      (void) const;
@@ -65,6 +66,13 @@ namespace sld {
         this->array    = array;
         this->capacity = capacity;
         this->count    = 0;
+    }
+
+    SLD_API_INLINE_ARRAY_LIST
+    validate(
+        void) const -> void {
+
+        assert(this->is_valid());
     }
 
     SLD_API_INLINE_ARRAY_LIST
